@@ -51,6 +51,13 @@ describe('exact-patch live adapter', () => {
     expect(data.twinReadbacks).toEqual({})
   })
 
+  it('never labels local model state as a platform readback', () => {
+    const local = { ...snapshot, publication_status: 'LOCAL_MODEL_SNAPSHOT' as const }
+    expect(toPatchedDashboardData(topology, local, scenario, decision, readiness, 1_000).source).toBe('LOCAL MODEL · PLATFORM NOT CONFIGURED')
+    const stale = { ...readiness, platform_connected: false }
+    expect(toPatchedDashboardData(topology, snapshot, scenario, decision, stale, 1_000).source).toBe('ECLIPSE DITTO READBACK (STALE)')
+  })
+
   it('derives the evidence trail from current validated decisions and labels actions simulated', () => {
     const data = toPatchedDashboardData(topology, snapshot, scenario, decision, readiness, 1_000)
     expect(data.decisionTrace[0].observation).toContain('Z04 EMERGENCY')
