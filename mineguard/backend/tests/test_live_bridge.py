@@ -27,6 +27,15 @@ class FakePlatform:
         self.read_ids.add(thing_id)
         return self.stored.get(thing_id)
 
+    def get_things(self, thing_ids: Any) -> dict[str, dict[str, Any]]:
+        ids = set(thing_ids)
+        self.read_ids.update(ids)
+        return {
+            thing_id: {"thingId": thing_id, **thing}
+            for thing_id, thing in self.stored.items()
+            if thing_id in ids
+        }
+
 
 def _bridge(
     topology: Topology, monkeypatch: pytest.MonkeyPatch
@@ -52,7 +61,9 @@ def test_all_managed_twins_require_matching_readback(
 ) -> None:
     bridge, fake = _bridge(topology, monkeypatch)
     snapshot = Simulation(topology, parameters).snapshot()
-    assert bridge.publish(snapshot) is True
+    readback = bridge.publish(snapshot)
+    assert readback.publication_status == "ECLIPSE_DITTO_READBACK"
+    assert readback.tick == snapshot.tick
     assert len(fake.read_ids) == 9
     assert fake.read_ids == set(fake.messages)
 
@@ -72,7 +83,7 @@ def test_reset_same_tick_cannot_reuse_previous_publication_readback(
 ) -> None:
     bridge, fake = _bridge(topology, monkeypatch)
     snapshot = Simulation(topology, parameters).snapshot()
-    assert bridge.publish(snapshot) is True
+    assert bridge.publish(snapshot).tick == snapshot.tick
     fake.propagate = False
     with pytest.raises(TimeoutError, match="not verified"):
         bridge.publish(snapshot)

@@ -32,9 +32,9 @@ class RuntimeService:
         *,
         history_limit: int = 240,
         twin_reader: Callable[[str], dict[str, Any] | None] | None = None,
-        snapshot_publisher: Callable[[SimulationSnapshot], bool] | None = None,
+        snapshot_publisher: Callable[[SimulationSnapshot], SimulationSnapshot | bool] | None = None,
         publisher_close: Callable[[], None] | None = None,
-        publish_every_ticks: int = 60,
+        publish_every_ticks: int = 2,
     ) -> None:
         if history_limit < 2:
             raise ValueError("history_limit must be at least two")
@@ -44,6 +44,10 @@ class RuntimeService:
         self._scenarios = ScenarioEngine(simulation, load_scenarios())
         self._history: deque[SimulationSnapshot] = deque(maxlen=history_limit)
         self._history.append(simulation.snapshot())
+        # State rebuilt from Eclipse Ditto after each verified publication; this,
+        # not the in-memory model, is what the UI reads when the platform is configured.
+        self._platform_snapshot: SimulationSnapshot | None = None
+        self._platform_history: deque[SimulationSnapshot] = deque(maxlen=history_limit)
         self._twin_reader = twin_reader
         self._snapshot_publisher = snapshot_publisher
         self._publisher_close = publisher_close
@@ -90,8 +94,8 @@ class RuntimeService:
             return self._platform_error
         if self._last_verified_publication is None:
             return "AWAITING_DITTO_READBACK"
-        # The default publication cadence is 30 wall-clock seconds. The UI may
-        # update faster; absence of a new Ditto tick between publications is normal.
+        # The default publication cadence is one second (two physics ticks). The
+        # verified readback becomes stale only after two missed cycles plus margin.
         if monotonic() - self._last_verified_publication > self._publish_interval * 2 + 15:
             return "DITTO_READBACK_STALE"
         return None
@@ -215,13 +219,16 @@ class RuntimeService:
                 continue
             generation, snapshot = pending
             try:
-                verified = self._snapshot_publisher(snapshot)
+                result = self._snapshot_publisher(snapshot)
+                readback = result if isinstance(result, SimulationSnapshot) else None
                 with self._publish_lock:
                     if generation == self._publication_generation:
-                        if verified is True:
+                        if result is True or readback is not None:
                             self._last_verified_publication = monotonic()
                             self._last_verified_tick = snapshot.tick
                             self._platform_error = None
+                            if readback is not None:
+                                self._store_platform_readback(readback)
                         else:
                             self._platform_error = "DITTO_PUBLICATION_UNVERIFIED"
             except Exception as exc:
@@ -229,11 +236,39 @@ class RuntimeService:
                     if generation == self._publication_generation:
                         self._platform_error = type(exc).__name__
 
+    def _store_platform_readback(self, readback: SimulationSnapshot) -> None:
+        previous = self._platform_snapshot
+        if previous is not None and (
+            readback.tick < previous.tick or readback.simulated_seconds < previous.simulated_seconds
+        ):
+            self._platform_history.clear()
+        if previous is None or readback.tick != previous.tick or readback.paused:
+            self._platform_history.append(readback)
+        self._platform_snapshot = readback
+
+    @property
+    def state_source(self) -> str:
+        return "ECLIPSE_DITTO_READBACK" if self.platform_configured else "LOCAL_MODEL"
+
     def snapshot(self) -> SimulationSnapshot:
+        """Current in-memory model state, used by the controller and diagnostics."""
         with self._state_access():
             return self._simulation.snapshot()
 
+    def platform_snapshot(self) -> SimulationSnapshot:
+        """State served to the UI: the latest Ditto readback when the platform is configured."""
+        if not self.platform_configured:
+            return self.snapshot()
+        with self._publish_lock:
+            readback = self._platform_snapshot
+        if readback is None:
+            raise RuntimeUnavailableError("Awaiting the first Eclipse Ditto readback")
+        return readback
+
     def history(self) -> tuple[SimulationSnapshot, ...]:
+        if self.platform_configured:
+            with self._publish_lock:
+                return tuple(self._platform_history)
         with self._state_access():
             return tuple(self._history)
 
@@ -283,6 +318,9 @@ class RuntimeService:
             return {
                 "simulation_only": True,
                 "source_type": snapshot.source_type,
+                "evaluated_on": "CONTROLLER_MODEL_STATE",
+                "model_tick": snapshot.tick,
+                "platform_last_verified_tick": self.platform_last_verified_tick,
                 "simulated_seconds": snapshot.simulated_seconds,
                 "scenario": self._scenarios.state().model_dump(mode="json"),
                 "risk_assessments": [item.model_dump(mode="json") for item in snapshot.risks],

@@ -88,15 +88,22 @@ with socket.create_connection((host, port), timeout=10) as client:
             payload = bytes(value ^ mask[index % 4] for index, value in enumerate(payload))
         return opcode, payload
 
+    # Frames repeat the latest Ditto readback, so read until a newer readback arrives.
     snapshots: list[dict[str, object]] = []
-    while len(snapshots) < 2:
+    while len(snapshots) < 12:
         opcode, payload = read_frame()
         if opcode == 1:
             snapshots.append(json.loads(payload))
+            if len(snapshots) > 1 and (
+                snapshots[-1]["paused"] or snapshots[-1]["tick"] != snapshots[0]["tick"]
+            ):
+                break
         elif opcode == 8:
             raise RuntimeError("WebSocket closed before two snapshots arrived")
 
-first, second = snapshots
+first, second = snapshots[0], snapshots[-1]
+for snapshot in snapshots:
+    assert snapshot["publication_status"] == "ECLIPSE_DITTO_READBACK", "UI state is not Ditto readback"
 assert first["simulation_only"] is True
 assert first["source_type"] == "SYNTHETIC_PHYSICS"
 assert second["simulation_only"] is True
@@ -125,6 +132,7 @@ import sys
 
 state, twin, fan = map(json.loads, sys.argv[1:])
 assert state["simulation_only"] is True and state["source_type"] == "SYNTHETIC_PHYSICS"
+assert state["publication_status"] == "ECLIPSE_DITTO_READBACK"
 assert len(state["zones"]) == 6
 assert twin["thingId"] == "mineguard:zone-z04"
 assert twin["features"]["risk"]["properties"]["simulation_only"] is True

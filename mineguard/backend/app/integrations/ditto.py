@@ -4,6 +4,7 @@ import base64
 import json
 import urllib.error
 import urllib.request
+from collections.abc import Iterable
 from typing import Any
 from urllib.parse import quote
 
@@ -34,6 +35,26 @@ class DittoClient:
         if not isinstance(value, dict):
             raise RuntimeError("Ditto returned a non-object thing")
         return value
+
+    def get_things(self, thing_ids: Iterable[str]) -> dict[str, dict[str, Any]]:
+        """Read several twins in one authenticated request; missing twins are omitted."""
+        ids = ",".join(quote(thing_id, safe=":") for thing_id in sorted(thing_ids))
+        request = urllib.request.Request(
+            f"{self._base_url}/api/2/things?ids={ids}", headers=self._headers
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=self._timeout_seconds) as response:
+                value: object = json.load(response)
+        except urllib.error.HTTPError as exc:
+            raise RuntimeError(f"Ditto batch GET failed with HTTP {exc.code}") from exc
+        if not isinstance(value, list):
+            raise RuntimeError("Ditto returned a non-list batch response")
+        things: dict[str, dict[str, Any]] = {}
+        for item in value:
+            if not isinstance(item, dict) or not isinstance(item.get("thingId"), str):
+                raise RuntimeError("Ditto returned an invalid thing in a batch response")
+            things[item["thingId"]] = item
+        return things
 
     def put_thing(self, thing_id: str, body: dict[str, object]) -> int:
         headers = {**self._headers, "Content-Type": "application/json"}

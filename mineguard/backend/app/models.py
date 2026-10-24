@@ -366,7 +366,9 @@ class SimulationSnapshot(Model):
     simulated_seconds: Nonnegative
     paused: bool
     source_type: Literal["SYNTHETIC_PHYSICS"] = "SYNTHETIC_PHYSICS"
-    publication_status: Literal["LOCAL_MODEL_SNAPSHOT"] = "LOCAL_MODEL_SNAPSHOT"
+    publication_status: Literal["LOCAL_MODEL_SNAPSHOT", "ECLIPSE_DITTO_READBACK"] = (
+        "LOCAL_MODEL_SNAPSHOT"
+    )
     simulation_only: Literal[True] = True
     zones: tuple[ZoneConcentration, ...]
     airways: tuple[AirwayFlow, ...]

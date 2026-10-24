@@ -54,7 +54,7 @@ def _service_from_environment() -> RuntimeService:
         twin_reader=bridge.read_twin if bridge else None,
         snapshot_publisher=bridge.publish if bridge else None,
         publisher_close=bridge.close if bridge else None,
-        publish_every_ticks=int(os.environ.get("MINEGUARD_PUBLISH_EVERY_TICKS", "60")),
+        publish_every_ticks=int(os.environ.get("MINEGUARD_PUBLISH_EVERY_TICKS", "2")),
     )
 
 
@@ -116,6 +116,7 @@ def create_app(service: RuntimeService | None = None) -> FastAPI:
                 "platform_connected": connected,
                 "platform_error": runtime.platform_error or "NONE",
                 "platform_last_verified_tick": runtime.platform_last_verified_tick,
+                "state_source": runtime.state_source,
                 "source_type": "SYNTHETIC_PHYSICS",
             },
             status_code=200 if status == "ready" else 503,
@@ -127,17 +128,18 @@ def create_app(service: RuntimeService | None = None) -> FastAPI:
 
     @app.get("/api/v1/state", response_model=SimulationSnapshot)
     def state() -> SimulationSnapshot:
+        """Latest state read back from Eclipse Ditto (local model only when unconfigured)."""
         runtime.require_available()
-        return runtime.snapshot()
+        return runtime.platform_snapshot()
 
     @app.websocket("/api/v1/stream")
     async def state_stream(websocket: WebSocket) -> None:
-        """Stream validated snapshots; commands remain on guarded HTTP routes."""
+        """Stream Ditto-readback snapshots; commands remain on guarded HTTP routes."""
         await websocket.accept()
         try:
             while True:
                 runtime.require_available()
-                snapshot = await asyncio.to_thread(runtime.snapshot)
+                snapshot = await asyncio.to_thread(runtime.platform_snapshot)
                 runtime.require_available()
                 await websocket.send_json(snapshot.model_dump(mode="json"))
                 await asyncio.sleep(1.0)

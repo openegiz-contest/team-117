@@ -77,15 +77,18 @@ def zone_features(
             reason_codes=list(risk.reason_codes),
             quality=risk.quality.value,
             source_type=risk.source_type,
+            transitioned=risk.transitioned,
             simulation_only=True,
         ),
         "safety_interlock": _feature(
             "TRIPPED" if safety.production_stop else "CLEAR",
+            risk_state=safety.risk_state.value,
             trip_power=safety.production_stop,
             evacuation_advisory=safety.evacuation_advisory,
             ventilation_response=safety.ventilation_response,
             optimization_enabled=safety.optimization_enabled,
             reason_codes=list(safety.reason_codes),
+            fan_requests=[request.model_dump(mode="json") for request in safety.fan_requests],
             simulation_only=True,
             equipment_io=False,
         ),
@@ -105,6 +108,12 @@ def fan_features(snapshot: SimulationSnapshot, fan_id: str, run_id: str) -> dict
             unit="% rated speed",
             quality="GOOD",
             source_type=snapshot.source_type,
+        ),
+        "requested_speed": _feature(
+            round(100 * fan.requested_speed_fraction, 6),
+            unit="% rated speed",
+            source_type=snapshot.source_type,
+            simulation_only=True,
         ),
         "rpm": _feature(
             round(fan.actual_speed_rpm, 6),
@@ -133,8 +142,13 @@ def mine_features(snapshot: SimulationSnapshot, run_id: str) -> dict[str, object
     max_co_ppm = max(item.co_ppm for item in snapshot.zones)
     total_power = fsum(item.power_kw for item in snapshot.fans)
     total_flow = next(item.flow_m3s for item in snapshot.airways if item.airway_id == "E01")
+    airways = {
+        f"airway_{item.airway_id.lower()}": _feature(round(item.flow_m3s, 8), unit="m3/s")
+        for item in snapshot.airways
+    }
     return {
         "idSimulationRun": _feature(run_id),
+        **airways,
         "max_methane": _feature(
             round(fraction_to_percent(max_methane), 8),
             unit="% volume",
@@ -151,6 +165,7 @@ def mine_features(snapshot: SimulationSnapshot, run_id: str) -> dict[str, object
             True,
             tick=snapshot.tick,
             simulated_seconds=snapshot.simulated_seconds,
+            paused=snapshot.paused,
         ),
     }
 

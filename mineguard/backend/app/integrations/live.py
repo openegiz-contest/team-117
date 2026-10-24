@@ -7,6 +7,7 @@ from typing import Any
 from app.integrations.bootstrap_twins import bootstrap_twins
 from app.integrations.ditto import DittoClient
 from app.integrations.mqtt import MqttPublisher
+from app.integrations.platform_state import snapshot_from_things
 from app.integrations.telemetry import (
     ditto_modify_features,
     mqtt_topic,
@@ -42,8 +43,12 @@ class LivePlatformBridge:
     def read_twin(self, thing_id: str) -> dict[str, Any] | None:
         return self._ditto.get_thing(thing_id)
 
-    def publish(self, snapshot: SimulationSnapshot) -> bool:
-        """Return success only after every MQTT update is observed through Ditto REST."""
+    def publish(self, snapshot: SimulationSnapshot) -> SimulationSnapshot:
+        """Publish through MQTT, then return the state rebuilt from Ditto's stored twins.
+
+        The returned snapshot is derived only from the authenticated Ditto readback,
+        so the UI shows platform state rather than the simulator's memory.
+        """
         if not self._bootstrapped:
             bootstrap_twins(self._ditto, self._topology)
             self._bootstrapped = True
@@ -56,18 +61,16 @@ class LivePlatformBridge:
         updates = snapshot_features(snapshot, self._topology, run_id)
         for thing_id, features in updates.items():
             self._mqtt.publish(mqtt_topic(thing_id), ditto_modify_features(thing_id, features))
-        pending = set(updates)
         deadline = monotonic() + self._verification_timeout
-        while pending:
-            for thing_id in tuple(pending):
-                if monotonic() >= deadline:
-                    raise TimeoutError("Published telemetry was not verified in Eclipse Ditto")
-                thing = self.read_twin(thing_id)
-                if self._matches_publication(thing, run_id, snapshot.tick):
-                    pending.remove(thing_id)
-            if pending:
-                sleep(min(0.1, max(0.0, deadline - monotonic())))
-        return True
+        while True:
+            things = self._ditto.get_things(updates)
+            if set(things) == set(updates) and all(
+                self._matches_publication(thing, run_id, snapshot.tick) for thing in things.values()
+            ):
+                return snapshot_from_things(self._topology, things, run_id)
+            if monotonic() >= deadline:
+                raise TimeoutError("Published telemetry was not verified in Eclipse Ditto")
+            sleep(min(0.1, max(0.0, deadline - monotonic())))
 
     @staticmethod
     def _matches_publication(thing: dict[str, Any] | None, run_id: str, tick: int) -> bool:
