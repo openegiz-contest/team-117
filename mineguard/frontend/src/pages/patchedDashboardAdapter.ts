@@ -70,7 +70,9 @@ export function toPatchedDashboardData(
 
   return {
     simulated: true,
-    source: readiness?.platform_connected ? 'FASTAPI + ECLIPSE DITTO VERIFIED' : 'FASTAPI LIVE STATE',
+    source: snapshot.publication_status === 'ECLIPSE_DITTO_READBACK'
+      ? readiness?.platform_connected === false ? 'ECLIPSE DITTO READBACK (STALE)' : 'ECLIPSE DITTO READBACK'
+      : 'LOCAL MODEL · PLATFORM NOT CONFIGURED',
     updatedAt: stamp,
     tick: snapshot.tick,
     status: scenario.status,

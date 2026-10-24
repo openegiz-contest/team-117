@@ -3,8 +3,6 @@ import type { ComponentType } from 'react'
 interface FinalThreePagesProps {
   view: 'twin' | 'scenario' | 'energy'
   setView: (view: 'twin' | 'command' | 'scenario' | 'energy' | 'evidence') => void
-  mode: 'live'
-  setMode: (mode: string) => void
   data: unknown
   error: string | null
   pending: boolean

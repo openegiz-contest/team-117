@@ -103,6 +103,13 @@ def test_configured_platform_serves_only_ditto_readback(
         assert history and all(
             item["publication_status"] == "ECLIPSE_DITTO_READBACK" for item in history
         )
+        validation = client.get("/api/v1/evidence").json()["validation"]
+        assert validation["scenario_repeatability"] == "PASS"
+        assert validation["residual_bounds"] == "PASS"
+        assert validation["source_traceability"] == "PASS"
+        assert validation["telemetry_freshness"] == "PASS"
+        assert validation["unit_checks"] in {"PASS", "NOT_VERIFIED"}
+        assert set(validation["details"]) >= {"unit_checks", "residual_bounds"}
 
 
 def test_configured_platform_without_readback_is_unavailable(

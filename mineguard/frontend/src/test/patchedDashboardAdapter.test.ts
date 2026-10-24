@@ -21,6 +21,7 @@ const snapshot: Snapshot = {
   paused: false,
   simulation_only: true,
   source_type: 'SYNTHETIC_PHYSICS',
+  publication_status: 'ECLIPSE_DITTO_READBACK',
   zones: [{ zone_id: 'Z01', methane_fraction: 0.001, co_ppm: 3 }, { zone_id: 'Z04', methane_fraction: 0.016, co_ppm: 12 }],
   airways: [{ airway_id: 'E01', flow_m3s: 12 }],
   fans: [{ fan_id: 'FAN_MAIN', actual_speed_fraction: 1, actual_speed_rpm: 1200, faulted: false, power_kw: 100 }],

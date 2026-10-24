@@ -124,8 +124,6 @@ export function PatchedOperationalPage({ view }: { view: 'twin' | 'scenario' | '
   return <FinalThreePages
     view={view}
     setView={navigate}
-    mode="live"
-    setMode={() => undefined}
     data={state.data}
     error={state.error}
     pending={state.pending}
@@ -143,15 +141,20 @@ export function PatchedEvidencePage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    void getEvidence(controller.signal).then(setEvidence).catch((reason: Error) => setEvidenceError(reason.message))
-    return () => controller.abort()
+    let timer = 0
+    const read = () => {
+      void getEvidence(controller.signal)
+        .then((value) => { setEvidence(value); setEvidenceError(null) })
+        .catch((reason: Error) => { if (!controller.signal.aborted) setEvidenceError(reason.message) })
+        .finally(() => { if (!controller.signal.aborted) timer = window.setTimeout(read, 10_000) })
+    }
+    read()
+    return () => { controller.abort(); window.clearTimeout(timer) }
   }, [])
 
-  const data = state.data ? { ...state.data, evidence, source: String(evidence?.model_source ?? state.data.source) } : null
+  const data = state.data ? { ...state.data, evidence } : null
   return <EvidenceDashboard
     data={data}
-    mode="live"
-    setMode={() => undefined}
     error={state.error ?? evidenceError}
     onNavigate={navigate}
   />

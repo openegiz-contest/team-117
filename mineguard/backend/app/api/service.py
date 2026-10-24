@@ -19,6 +19,7 @@ from app.models import (
 )
 from app.simulation.runtime import Simulation
 from app.simulation.scenarios import ScenarioEngine
+from app.units import fraction_to_percent, fraction_to_ppm
 
 
 class RuntimeUnavailableError(RuntimeError):
@@ -48,6 +49,9 @@ class RuntimeService:
         # not the in-memory model, is what the UI reads when the platform is configured.
         self._platform_snapshot: SimulationSnapshot | None = None
         self._platform_history: deque[SimulationSnapshot] = deque(maxlen=history_limit)
+        self._max_residual_m3 = 0.0
+        self._residual_ticks = 0
+        self._repeatability: tuple[str, str] | None = None
         self._twin_reader = twin_reader
         self._snapshot_publisher = snapshot_publisher
         self._publisher_close = publisher_close
@@ -189,6 +193,13 @@ class RuntimeService:
                     previous = self._simulation.snapshot()
                     result = self._simulation.tick()
                     if result is not None:
+                        co_step = self._simulation.last_co_step
+                        self._max_residual_m3 = max(
+                            self._max_residual_m3,
+                            abs(result.balance_residual_m3),
+                            abs(co_step.balance_residual_m3) if co_step else 0.0,
+                        )
+                        self._residual_ticks += 1
                         self._scenarios.after_tick()
                         self._simulation.apply_emergency_response()
                     snapshot = self._simulation.snapshot()
@@ -335,9 +346,114 @@ class RuntimeService:
                 },
             }
 
+    def _scenario_repeatability(self) -> tuple[str, str]:
+        """Run S1 twice from fresh copies and check reset; cached because inputs are versioned."""
+        if self._repeatability is None:
+            topology, parameters = self._simulation.topology, self._simulation.parameters
+            definition = self._scenarios.definitions["S1_METHANE_LEAK"]
+            runs = []
+            for _ in range(2):
+                simulation = Simulation(topology, parameters)
+                engine = ScenarioEngine(simulation, (definition,))
+                engine.start(definition.id)
+                for _ in range(120):
+                    simulation.tick()
+                    engine.after_tick()
+                runs.append(simulation.snapshot())
+            simulation = Simulation(topology, parameters)
+            initial = simulation.snapshot()
+            simulation.set_methane_source("Z04", 0.8)
+            simulation.tick()
+            simulation.reset()
+            identical = runs[0] == runs[1]
+            reset_exact = simulation.snapshot() == initial
+            self._repeatability = (
+                "PASS" if identical and reset_exact else "FAIL",
+                f"Two seeded S1 runs identical after 120 ticks: {identical}; "
+                f"reset reproduces tick-0 baseline exactly: {reset_exact}",
+            )
+        return self._repeatability
+
+    def runtime_validation(self) -> dict[str, Any]:
+        """Checks executed by the running service; not a substitute for the test suite."""
+        checks: dict[str, str] = {}
+        details: dict[str, str] = {}
+        with self._publish_lock:
+            readback = self._platform_snapshot
+        with self._state_access():
+            model_by_tick = {item.tick: item for item in self._history}
+            max_residual, residual_ticks = self._max_residual_m3, self._residual_ticks
+
+        conversions = fraction_to_ppm(0.008) == 8000.0 and fraction_to_percent(0.008) == 0.8
+        model = model_by_tick.get(readback.tick) if readback is not None else None
+        if readback is None or model is None:
+            checks["unit_checks"] = "PASS" if conversions and readback is None else "NOT_VERIFIED"
+            details["unit_checks"] = (
+                "0.8 % volume = 8000 ppm conversion verified; no Ditto readback to compare"
+                if readback is None
+                else "Ditto readback tick is outside the retained model history"
+            )
+        else:
+            methane = max(
+                abs(a.methane_fraction - b.methane_fraction)
+                for a, b in zip(readback.zones, model.zones, strict=True)
+            )
+            co = max(
+                abs(a.co_ppm - b.co_ppm) for a, b in zip(readback.zones, model.zones, strict=True)
+            )
+            ok = conversions and methane <= 1e-9 and co <= 1e-6
+            checks["unit_checks"] = "PASS" if ok else "FAIL"
+            details["unit_checks"] = (
+                f"Ditto % volume and ppm readback at tick {readback.tick} matches model fractions "
+                f"(max CH4 error {methane:.1e}, max CO error {co:.1e} ppm)"
+            )
+
+        checks["scenario_repeatability"], details["scenario_repeatability"] = (
+            self._scenario_repeatability()
+        )
+
+        if not self.platform_configured:
+            checks["telemetry_freshness"] = "NOT_VERIFIED"
+            details["telemetry_freshness"] = "Eclipse Ditto is not configured"
+        elif self.platform_connected and readback is not None:
+            checks["telemetry_freshness"] = "PASS"
+            details["telemetry_freshness"] = (
+                f"Ditto readback verified at tick {self.platform_last_verified_tick} "
+                f"within the {self._publish_interval:.1f} s publication cycle"
+            )
+        else:
+            checks["telemetry_freshness"] = "FAIL"
+            details["telemetry_freshness"] = f"Platform state: {self.platform_error}"
+
+        if residual_ticks == 0:
+            checks["residual_bounds"] = "NOT_VERIFIED"
+        elif max_residual <= 1e-9:
+            checks["residual_bounds"] = "PASS"
+        else:
+            checks["residual_bounds"] = "FAIL"
+        details["residual_bounds"] = (
+            f"Max |gas balance residual| {max_residual:.2e} m3 over {residual_ticks} live ticks "
+            "(limit 1e-9 m3, methane and CO)"
+        )
+
+        if readback is not None and readback.publication_status == "ECLIPSE_DITTO_READBACK":
+            checks["source_traceability"] = "PASS"
+            details["source_traceability"] = (
+                "UI state rebuilt from nine Ditto twins sharing one MQTT publication run ID; "
+                "parameters declare fictional provenance"
+            )
+        else:
+            checks["source_traceability"] = "NOT_VERIFIED"
+            details["source_traceability"] = "No Eclipse Ditto readback available"
+
+        values = set(checks.values())
+        status = "FAIL" if "FAIL" in values else "PASS" if values == {"PASS"} else "PARTIAL"
+        return {"status": status, **checks, "details": details}
+
     def engineering_evidence(self) -> dict[str, Any]:
         trace = self.decision_trace()
         return {
+            "validation": self.runtime_validation(),
             "project": "MineGuard X",
             "simulation_only": True,
             "mine_id": self.topology.mine_id,

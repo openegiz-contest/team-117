@@ -77,7 +77,7 @@ export function CommandCenter() {
         </section>
         <section className="panel telemetry-panel"><PanelHeading icon={<Wind size={19} />} title={<>SECTOR<br />TELEMETRY</>} aside={<span className="stream-state">LIVE<br />READINGS</span>} />
           <div className="zone-list">{model.zones.map((zone) => <button type="button" key={zone.id} onClick={() => setSelected(zone.id)} className={`zone-row ${rowClass(zone.risk, selected === zone.id)}`}><div className="zone-name"><b>{zone.id} — {zone.name}</b><small>{zone.quality} · SYNTHETIC PHYSICS</small></div><div className="zone-reading"><strong>{zone.methanePercent.toFixed(3)}%</strong><span>CH₄</span><small>{zone.risk.replace('_', ' ')}</small></div></button>)}</div>
-          <div className="rail-note">{transport} · T+{snapshot.simulated_seconds.toFixed(1)}s · TICK {snapshot.tick}</div>
+          <div className="rail-note">{snapshot.publication_status === 'ECLIPSE_DITTO_READBACK' ? 'ECLIPSE DITTO READBACK' : 'LOCAL MODEL'} · {transport} · T+{snapshot.simulated_seconds.toFixed(1)}s · TICK {snapshot.tick}</div>
         </section>
       </aside>
 

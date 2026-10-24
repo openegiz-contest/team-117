@@ -32,6 +32,8 @@ export interface Snapshot {
   paused: boolean
   simulation_only: true
   source_type: 'SYNTHETIC_PHYSICS'
+  /** ECLIPSE_DITTO_READBACK when rebuilt from the platform; LOCAL_MODEL_SNAPSHOT only without a platform. */
+  publication_status?: 'LOCAL_MODEL_SNAPSHOT' | 'ECLIPSE_DITTO_READBACK'
   zones: Array<{ zone_id: string; methane_fraction: number; co_ppm: number }>
   airways: Array<{ airway_id: string; flow_m3s: number }>
   fans: Array<{
