@@ -1,43 +1,102 @@
-# <Team name>: a digital mine on OpenEgiz
+# DeepCore Labs: MineGuard X — a digital mine on OpenEgiz
 
-> Team Repository of the contest “Digital Mine on OpenEgiz”. **Replace the contents of this file with the instructions for your Submission.** The AI Jury runs the Submission strictly by these instructions, from scratch, in the Judge Environment. Accepted languages: English, Kazakh, Russian.
+MineGuard X is a physics-informed, simulation-only digital twin of a fictional
+underground coal mine. Six connected ventilation zones and two fans are Eclipse
+Ditto twins. A deterministic airflow and gas-transport model publishes their
+state through the official OpenEgiz MQTT path, and the web interface reads it
+back from Ditto. The twin supports methane-risk, simulated-safety and
+fan-energy decisions. The Concept, modules and scenarios are in
+[SUBMISSION.md](SUBMISSION.md).
 
-> **Start with the Concept**, the first section of [SUBMISSION.md](SUBMISSION.md): the Team writes it before any code. What AI agents build from this Template without a Concept is the Default Solution, published on the [contest site](https://openegiz-contest.github.io/) as the low bar: a Submission that does not go beyond it gets low levels in the Rubric. AI agents read [AGENTS.md](AGENTS.md).
+All safety actions (production stop, evacuation advisory, fan commands) are
+**simulated**. Nothing connects to real equipment.
 
 ## Running
 
-Requirements (Docker, `make`, Windows/WSL2 setup) are in [OPENEGIZ.md](OPENEGIZ.md) / [OPENEGIZ.ru.md](OPENEGIZ.ru.md).
+Requirements: Ubuntu 24.04 (or WSL2 on Windows, see [OPENEGIZ.md](OPENEGIZ.md)),
+Docker with Compose v2.20+, `git`, `curl`, `python3`, and about 6 GiB of memory
+for Docker. From the repository root:
 
 ```bash
-sudo apt install -y make   # if make is missing (clean Ubuntu)
-make up            # the OpenEgiz platform
-make example-mine  # the Example Mine: twins, simulator, dashboard
+sudo apt-get update
+sudo apt-get install -y make
+bash mineguard/scripts/bootstrap.sh
 ```
 
-Replace these commands with the commands of your Submission. The Submission must start by following these instructions without manual intervention (Rules, clause 6.4); downloading datasets and models and building are also listed here.
+`bootstrap.sh` runs the official `make up` (Ditto, Mosquitto, Telegraf,
+InfluxDB, Grafana and the rest of OpenEgiz). It then builds and starts the two
+MineGuard containers through the overlay `mineguard/deploy/compose.mineguard.yml`.
+It waits until the first simulated state has been published over MQTT and read
+back from Ditto. The command is idempotent: running it again on a running stack
+succeeds without changes.
+
+On success it prints:
+
+```text
+MineGuard X ready: http://127.0.0.1:8091
+Eclipse Ditto synchronization: connected
+All controls are simulation-only.
+```
+
+The first run downloads the official OpenEgiz images (about 2.3 GB) and builds
+the platform's Extended API, the MineGuard backend (Python 3.12) and the
+MineGuard UI (Node 24, served by nginx). No dataset or model download is
+required. Generated credentials stay in the git-ignored `deploy/compose/.env`.
 
 ## What to open
 
-- Grafana: the address and login are printed by `make up`.
-- <where to see the mine visualization, which dashboards>
+| Address | What it shows |
+|---|---|
+| <http://127.0.0.1:8091> | **MineGuard X Command Center**: interactive 3D cutaway of the six-zone mine with live methane, CO, airflow, fan RPM and risk state per zone, plus scenario controls |
+| <http://127.0.0.1:8091/twins> | Twin Inspector: authenticated Eclipse Ditto readback of all nine MineGuard twins (policy, attributes, features) |
+| <http://127.0.0.1:8091/scenarios> | Scenario Laboratory: start, pause, resume and reset the what-if scenarios |
+| <http://127.0.0.1:8091/energy> | Energy Intelligence: constraint-first ventilation-on-demand candidates and modeled energy comparison |
+| <http://127.0.0.1:8091/evidence> | Engineering Evidence: equations, limitations, decision trace and live runtime validation checks |
+| <http://127.0.0.1:3000> | Official OpenEgiz Grafana (twins under **OpenEgiz → Twins**; MineGuard telemetry is in InfluxDB measurement `mqtt_consumer`). Logins: `bash scripts/compose-urls.sh` |
+
+MineGuard uses port 8091 so that the official Grafana keeps port 3000.
+
+## Verifying (optional)
+
+```bash
+bash mineguard/scripts/full-smoke.sh      # official make smoke + MineGuard stream and Ditto readback
+bash mineguard/scripts/scenario-smoke.sh  # S1 methane release to EMERGENCY, Ditto interlock, reset
+```
+
+## Scenarios from the command line (optional)
+
+The same guarded, simulation-only API that the UI uses:
+
+```bash
+bash mineguard/scripts/run-demo.sh S1_METHANE_LEAK
+bash mineguard/scripts/run-demo.sh S2_MAIN_FAN_FAILURE
+curl -X POST -H 'X-MineGuard-Simulation: SIMULATION_ONLY' http://127.0.0.1:8091/api/v1/scenarios/reset
+```
+
+## Stopping
+
+```bash
+# stop the platform and MineGuard; twins and data are kept
+docker compose -f deploy/compose/docker-compose.yml -f mineguard/deploy/compose.mineguard.yml down
+```
 
 ## Repository contents
 
 | Path | Contents |
 |---|---|
-| `team/` | Directory for the Team's code. Using it is optional: any part may be changed, including the platform core |
-| `SUBMISSION.md` | Description of the Submission: **required** |
-| `presentation.pdf` | Presentation: **required**, in the repository root |
-| `AGENTS.md`, `CLAUDE.md` | Instructions for your AI agents (Codex, Claude Code and others read them automatically) |
-| `examples/mine/` | The Example Mine: shows how a digital mine is built on OpenEgiz. It is not a basis for the Submission |
-| `OPENEGIZ.md`, `OPENEGIZ.ru.md` | Documentation of the OpenEgiz platform v1.0.4 |
-
-The Submission is the `main` branch at the moment of the Freeze; other branches are not evaluated.
+| `mineguard/` | The Team's code: backend (physics, risk, VOD, Ditto/MQTT integration), frontend (React + Three.js), data, Compose overlay, scripts, docs and evidence. See [mineguard/README.md](mineguard/README.md) |
+| `SUBMISSION.md` | Description of the Submission |
+| `presentation.pdf` | Presentation |
+| `deploy/`, `Makefile`, `scripts/`, … | Official OpenEgiz v1.0.4 platform, unchanged |
+| `examples/mine/` | Official Example Mine; not used by MineGuard X |
+| `OPENEGIZ.md`, `OPENEGIZ.ru.md` | OpenEgiz platform documentation |
+| `AGENTS.md`, `CLAUDE.md` | Contest template instructions for AI agents |
 
 ## License
 
-The Submission is distributed under the MIT license, see [LICENSE](LICENSE). Copyright belongs to the Team: add the line `Copyright (c) 2026 <Team members>` to `LICENSE`.
+MIT, see [LICENSE](LICENSE). Third-party software and attributions:
+[mineguard/THIRD_PARTY.md](mineguard/THIRD_PARTY.md).
 
 ---
 
-Platform: [aleka07/openegiz](https://github.com/aleka07/openegiz). If the platform was useful to you, support the project with a star on GitHub.
+Platform: [aleka07/openegiz](https://github.com/aleka07/openegiz).
