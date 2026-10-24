@@ -58,3 +58,6 @@
 .v3-app-shell pre,.v3-app-shell code{font-family:Consolas,"Courier New",monospace!important}
 @media(max-width:740px){.v3-command-workspace .left-rail,.v3-command-workspace .right-rail{display:flex;flex-direction:column}.v3-command-workspace .fan-panel,.v3-command-workspace .telemetry-panel{width:100%}.v3-command-workspace .telemetry-panel{height:390px}}
 
+/* CPU-only WebGL: backdrop blurs over the live canvas are recomputed in software every frame. */
+html[data-render-profile=software] *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-render-profile=software] .floating-label,html[data-render-profile=software] .selected-sector-pop{background:#031c2cf4}

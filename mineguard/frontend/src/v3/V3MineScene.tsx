@@ -83,6 +83,7 @@ export function V3MineScene({ model, selected, onSelect, airflow, wireframe, res
   }, [])
   useEffect(() => engine.current?.setState(data, selected, airflow, wireframe), [airflow, data, selected, wireframe])
   useEffect(() => { if (resetSignal > 0) engine.current?.recenter() }, [resetSignal])
+  useEffect(() => { if (showSensors) engine.current?.refreshLabels() }, [showSensors])
 
   return <div className="scene-root scene-root-v2 scene-root-v3" ref={root} aria-label="Interactive V3 underground mine ventilation model">
     {error && <div className="scene-error" role="alert">{error}<p>Enable browser WebGL hardware acceleration.</p></div>}

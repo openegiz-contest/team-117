@@ -12,11 +12,13 @@ export function toV3SceneState(model: MineSceneModel): V3SceneState {
       co: zone.coPpm,
       airflow: zone.airflowM3s,
       quality: zone.quality,
+      risk: zone.risk,
       source: 'VALIDATED LIVE SNAPSHOT',
     })),
     fan: {
       rpm: mainFan?.actualRpm ?? 0,
       flow: model.zones.find((zone) => zone.role === 'intake')?.airflowM3s ?? 0,
+      faulted: mainFan?.faulted ?? true,
     },
   }
 }

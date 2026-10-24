@@ -13,7 +13,7 @@ it('maps validated six-zone scene state into the V3 renderer without inventing r
     fans: [{ id: 'FAN_MAIN', position: [0, 0, 0], speedFraction: 0.75, actualRpm: 735, powerKw: 67.5, faulted: false }],
   }
   const output = toV3SceneState(model)
-  expect(output.fan).toEqual({ rpm: 735, flow: 39.6 })
-  expect(output.zones[1]).toMatchObject({ id: 'Z04', ch4: 1.64, co: 6.9, airflow: 24.7, quality: 'GOOD' })
+  expect(output.fan).toEqual({ rpm: 735, flow: 39.6, faulted: false })
+  expect(output.zones[1]).toMatchObject({ id: 'Z04', ch4: 1.64, co: 6.9, airflow: 24.7, quality: 'GOOD', risk: 'EMERGENCY' })
   expect(output.zones.every((zone) => zone.source === 'VALIDATED LIVE SNAPSHOT')).toBe(true)
 })

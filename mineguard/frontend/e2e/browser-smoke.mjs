@@ -81,11 +81,11 @@ try {
     const frame = t => { if (!start) start = t; frames++; if (t-start < 3000) requestAnimationFrame(frame); else resolve({
       renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
       render_profile: canvas.dataset.renderProfile, sample_ms: t-start, approximate_raf_fps: (frames-1)*1000/(t-start),
-      draw_calls: canvas.dataset.drawCalls, triangles: canvas.dataset.triangles,
+      draw_calls: canvas.dataset.drawCalls, triangles: canvas.dataset.triangles, engine_render_fps: canvas.dataset.renderFps,
       canvas_pixels: [canvas.width,canvas.height], canvas_css: [canvas.clientWidth,canvas.clientHeight]
     }); }; requestAnimationFrame(frame);
   })`)
-  if (rendering.render_profile === 'v3-software-0.55') assert.ok(Math.abs(rendering.canvas_pixels[0] / rendering.canvas_css[0] - 0.55) < 0.02, 'V3 software canvas ratio did not apply')
+  if (rendering.render_profile === 'v3-software-lite') assert.ok(Math.abs(rendering.canvas_pixels[0] / rendering.canvas_css[0] - 0.5) < 0.02, 'V3 software canvas ratio did not apply')
   assert.equal(await evaluate("document.querySelectorAll('.scene-tools button').length"), 4)
   const cameraBefore = await evaluate("document.querySelector('.v3-main-view canvas').dataset.camera")
   await new Promise((done) => setTimeout(done, 2000))
@@ -105,7 +105,7 @@ try {
     await waitFor("document.querySelector('.mxf-header, .evx-header') !== null")
     if (path === '/energy') await waitFor("document.querySelectorAll('.mxf-candidate-table tbody tr').length > 0")
     if (path === '/twins') {
-      await waitFor("document.querySelectorAll('.mxf-entity').length === 9 && document.querySelector('.mxf-live-badge')?.textContent.includes('LIVE BACKEND') && document.querySelector('.mxf-detail-heading')?.textContent.includes('ECLIPSE DITTO RESPONSE')")
+      await waitFor("document.querySelectorAll('.mxf-entity').length === 9 && document.querySelector('.mxf-live-badge')?.textContent.includes('LIVE · DITTO') && document.querySelector('.mxf-detail-heading')?.textContent.includes('ECLIPSE DITTO RESPONSE')")
       await evaluate("document.querySelectorAll('.mxf-entity')[1].click()")
       await waitFor("document.querySelector('.mxf-detail-heading')?.textContent.includes('mineguard:zone-z01') && document.querySelector('.mxf-detail-heading')?.textContent.includes('ECLIPSE DITTO RESPONSE')")
       await evaluate("document.querySelectorAll('.mxf-entity')[0].click()")

@@ -4,8 +4,11 @@ import { BrowserRouter } from 'react-router-dom'
 
 import { App } from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { applyRenderProfile } from './renderProfile'
 import './styles.css'
 import './operations.css'
 import './v3-theme.css'
+
+applyRenderProfile()
 
 createRoot(document.getElementById('root')!).render(<StrictMode><ErrorBoundary><BrowserRouter><App /></BrowserRouter></ErrorBoundary></StrictMode>)

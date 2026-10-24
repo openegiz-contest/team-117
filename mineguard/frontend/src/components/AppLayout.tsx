@@ -38,7 +38,7 @@ export function AppLayout() {
         <span className="ultra">ULTRA<br />3D</span>
       </NavLink>
       <nav className="nav-tabs" aria-label="Dashboard views">{navigation.map(({ to, label, icon: Icon, end }) => <NavLink end={end} key={to} to={to} className={({ isActive }) => `nav-tab ${isActive ? 'active' : ''}`}><Icon className="tab-icon" size={19} /><span>{label}</span></NavLink>)}</nav>
-      <div className="top-right"><span className="source-flag live">LIVE BACKEND</span><span className={`connection ${connected ? 'connected' : 'offline'}`}>● <span>{connected ? 'SYSTEM ONLINE' : 'SYSTEM DEGRADED'}</span></span><time>{clock.toLocaleTimeString()}</time></div>
+      <div className="top-right"><span className="source-flag live">LIVE · DITTO</span><span className={`connection ${connected ? 'connected' : 'offline'}`}>● <span>{connected ? 'SYSTEM ONLINE' : 'SYSTEM DEGRADED'}</span></span><time>{clock.toLocaleTimeString()}</time></div>
     </header>
     {home ? <Outlet /> : <div className="workspace secondary-workspace"><main className="page-container"><Outlet /></main></div>}
     <footer className="bottom-status"><span className={connected ? 'green' : 'red'}>● {connected ? 'DITTO + SIMULATION CONNECTED' : 'PLATFORM STATUS DEGRADED'}</span><span>MODE: <b>SYNTHETIC PHYSICS</b></span><span>DITTO TICK: {readiness?.platform_last_verified_tick ?? '—'}</span><span>SIMULATION ONLY · NOT FOR OPERATIONAL SAFETY USE</span></footer>

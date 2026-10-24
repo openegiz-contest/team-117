@@ -6,6 +6,9 @@
  */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+// Probed before the real context is created, so MSAA can be disabled on CPU WebGL.
+import { isSoftwareRenderer } from '../renderProfile';
 
 const AQUA = 0x14eeff;
 const ICE = 0x8ff9ff;
@@ -18,6 +21,12 @@ const point = (x, y, z) => new THREE.Vector3(x, y, z);
 function seeded(seed = 7331) { let s=seed >>> 0; return () => ((s = (1664525*s + 1013904223)>>>0) / 4294967296); }
 const mat = (color, metalness = .3, roughness = .73, extra={}) => new THREE.MeshStandardMaterial({color, metalness, roughness, ...extra});
 const unlit = (color, extra={}) => new THREE.MeshBasicMaterial({color, ...extra});
+const UNKNOWN = 0xb794f6;
+const RISK_COLOR = {NORMAL:AQUA, ADVISORY:YELLOW, WARNING:YELLOW, EMERGENCY:ALERT, UNKNOWN_DATA:UNKNOWN};
+
+// Static meshes whose materials render identically can share one draw call.
+const materialKey=m=>[m.type,m.color?.getHexString(),m.emissive?.getHexString(),m.emissiveIntensity,m.metalness,m.roughness,
+  m.flatShading,m.side,m.transparent,m.opacity,m.vertexColors,m.depthWrite,m.blending].join('|');
 
 // The render anchors are distinct from API zone topology, which remains authoritative.
 const ANCHORS = {
@@ -76,9 +85,20 @@ export class MineEngine {
     this.wireframe=false;
     this.selected='Z04';
     this.data=null;
-    this.flowMeshes=[];
-    this.flowMaterials=[];
+    this.beamMeshes=[];
+    this.particleSpecs=[];
+    this.arrowSpecs=[];
     this.structuralMaterials=[];
+    this.fanRims=[];
+    this.softwareRenderer=isSoftwareRenderer();
+    // One shared set of flow materials lets every airflow beam merge into three draw calls.
+    this.flowMats={
+      halo:unlit(0x00d5ff,{transparent:true,opacity:.14,depthWrite:false,blending:THREE.AdditiveBlending}),
+      glow:unlit(0x00f0ff,{transparent:true,opacity:.25,depthWrite:false,blending:THREE.AdditiveBlending}),
+      line:unlit(0x8affff,{transparent:true,opacity:.98,depthWrite:false}),
+      arrow:unlit(ICE,{transparent:true,opacity:.95,depthWrite:false,blending:THREE.AdditiveBlending}),
+      particle:unlit(0xc4ffff,{transparent:true,opacity:.96,depthWrite:false,blending:THREE.AdditiveBlending}),
+    };
     this.zoneLights=new Map();
     this.zoneAnchors=new Map(Object.entries(ANCHORS));
     this.clickTargets=[];
@@ -87,17 +107,14 @@ export class MineEngine {
     this.scene.fog=new THREE.FogExp2(0x020d16,.0037);
     this.camera=new THREE.PerspectiveCamera(37,1,.1,360);
     this.camera.position.copy(CAM_POS);
-    this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
-    const glContext=this.renderer.getContext();
-    const debugInfo=glContext.getExtension('WEBGL_debug_renderer_info');
-    const rendererName=String(debugInfo?glContext.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL):glContext.getParameter(glContext.RENDERER));
-    this.softwareRenderer=/swiftshader|llvmpipe|software|softpipe/i.test(rendererName);
-    this.renderer.setPixelRatio(this.softwareRenderer?.55:Math.min(window.devicePixelRatio || 1,1.5));
+    this.renderer=new THREE.WebGLRenderer({antialias:!this.softwareRenderer,alpha:false,powerPreference:'high-performance'});
+    this.renderer.setPixelRatio(this.softwareRenderer?.5:Math.min(window.devicePixelRatio || 1,1.5));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure=1.72;
+    this.renderer.toneMappingExposure=this.softwareRenderer?1.45:1.72;
     this.renderer.domElement.className='three-canvas';
-    this.renderer.domElement.dataset.renderProfile=this.softwareRenderer?'v3-software-0.55':'v3-hardware';
+    this.renderer.domElement.dataset.renderProfile=this.softwareRenderer?'v3-software-lite':'v3-hardware';
+    this.lastRender=0;
     container.appendChild(this.renderer.domElement);
     this.controls=new OrbitControls(this.camera,this.renderer.domElement);
     this.controls.enableDamping=true;
@@ -113,6 +130,9 @@ export class MineEngine {
     this.clock=new THREE.Clock();
     this.elapsed=0;this.lastLabelAt=-1;
     this.build();
+    this.mergeStaticMeshes();
+    if(this.softwareRenderer)this.useLambertMaterials();
+    this.buildFlowInstances();
     this.raycaster=new THREE.Raycaster();
     this.pointer=new THREE.Vector2();
     this.pointerDown=null;
@@ -142,15 +162,20 @@ export class MineEngine {
     m.rotation.x=Math.PI/2;m.position.set(x,y,z);this.add(m,parent);return m;
   }
   tube(curve,radius,material,segments=120,sides=7,parent=this.group){
-    const m=new THREE.Mesh(new THREE.TubeGeometry(curve,segments,radius,sides,false),material);
+    const lite=this.softwareRenderer;
+    const geometry=new THREE.TubeGeometry(curve,lite?Math.max(16,Math.round(segments/2)):segments,radius,lite?Math.max(4,sides-2):sides,false);
+    const m=new THREE.Mesh(geometry,material);
     this.add(m,parent);return m;
   }
   build(){
     this.scene.add(new THREE.HemisphereLight(0xb9e8ed,0x14222a,2.15));
     this.scene.add(new THREE.AmbientLight(0x2d7894,.63));
     const sun=new THREE.DirectionalLight(0xdbf1f3,3.0);sun.position.set(-26,35,30);this.scene.add(sun);
-    const blue=new THREE.PointLight(0x00e6ff,135,65,1.5);blue.position.set(0,12,1);this.scene.add(blue);
-    const back=new THREE.PointLight(0x1c94ff,84,46,1.8);back.position.set(0,8,-17);this.scene.add(back);
+    // Point lights are evaluated per fragment; CPU WebGL keeps only the global lights.
+    if(!this.softwareRenderer){
+      const blue=new THREE.PointLight(0x00e6ff,135,65,1.5);blue.position.set(0,12,1);this.scene.add(blue);
+      const back=new THREE.PointLight(0x1c94ff,84,46,1.8);back.position.set(0,8,-17);this.scene.add(back);
+    }
     const grid=new THREE.GridHelper(112,46,0x08617a,0x0a3043);
     grid.position.y=-6.8;grid.material.opacity=.20;grid.material.transparent=true;this.group.add(grid);
     this.makeRockBed();
@@ -310,7 +335,7 @@ export class MineEngine {
         }
         this.box(2.52,.17,.17,x,.51,z,steel);
         this.box(.55,.1,.1,x,.47,z,glow);
-        if((x===-6.5||x===8.5) && z!==-11.55){
+        if(!this.softwareRenderer && (x===-6.5||x===8.5) && z!==-11.55){
           const l=new THREE.PointLight(0x21c9e9,3,5.5,2);
           l.position.set(x,.3,z);this.scene.add(l);
         }
@@ -455,34 +480,17 @@ export class MineEngine {
     return trench;
   }
   addFlow(curve,{intensity=1,particles=12,arrows=true,height=.1,radius=.2}={}){
-    const halo=unlit(0x00d5ff,{transparent:true,opacity:.14,depthWrite:false,blending:THREE.AdditiveBlending});
-    const glow=unlit(0x00f0ff,{transparent:true,opacity:.25,depthWrite:false,blending:THREE.AdditiveBlending});
-    const line=unlit(0x8affff,{transparent:true,opacity:.98,depthWrite:false});
     const segments=112;
     const cpts=Array.from({length:segments+1},(_,i)=>curve.getPoint(i/segments).add(point(0,height,0)));
     const raised=new THREE.CatmullRomCurve3(cpts);
-    const haloM=this.tube(raised,radius*3,halo,segments,5);
-    const glowM=this.tube(raised,radius*1.65,glow,segments,6);
-    const coreM=this.tube(raised,radius*.44,line,segments,5);
-    this.flowMaterials.push(halo,glow,line);
-    this.flowMeshes.push({kind:'beam',mesh:haloM},{kind:'beam',mesh:glowM},{kind:'beam',mesh:coreM});
-    const arrowMat=unlit(ICE,{transparent:true,opacity:.95,depthWrite:false,blending:THREE.AdditiveBlending});
-    if(arrows)for(let i=0;i<6;i++){
-      const u=(i+.55)/6,p=raised.getPoint(u),t=raised.getTangent(u).normalize();
-      const arrow=new THREE.Mesh(new THREE.ConeGeometry(.37,.98,5),arrowMat);
-      arrow.quaternion.setFromUnitVectors(VERTICAL,t);
-      arrow.position.copy(p);
-      this.add(arrow);
-      // Unlike V2 these arrowheads actually travel along the 3D roadway.
-      this.flowMeshes.push({kind:'movingArrow',mesh:arrow,curve:raised,phase:u,speed:intensity});
-    }
-    const particleMat=unlit(0xc4ffff,{transparent:true,opacity:.96,depthWrite:false,blending:THREE.AdditiveBlending});
-    const sphere=new THREE.SphereGeometry(.105,6,5);
-    for(let i=0;i<particles;i++){
-      const particle=new THREE.Mesh(sphere,particleMat);
-      this.add(particle);
-      this.flowMeshes.push({kind:'particle',mesh:particle,curve:raised,phase:i/particles,speed:intensity});
-    }
+    const beams=[[radius*1.65,this.flowMats.glow,6],[radius*.44,this.flowMats.line,5]];
+    // The wide additive halo is pure fill-rate cost on CPU WebGL.
+    if(!this.softwareRenderer)beams.unshift([radius*3,this.flowMats.halo,5]);
+    for(const [r,material,sides] of beams)this.tube(raised,r,material,segments,sides).userData.beam=true;
+    // Arrowheads and particles travel along the roadway; they are drawn as two instanced meshes.
+    if(arrows)for(let i=0;i<6;i++)this.arrowSpecs.push({curve:raised,phase:(i+.55)/6,speed:intensity});
+    const count=this.softwareRenderer?Math.ceil(particles/2):particles;
+    for(let i=0;i<count;i++)this.particleSpecs.push({curve:raised,phase:i/count,speed:intensity});
   }
   makeProductionWorkings(){
     // Three compact mining galleries with rectangular paths and rounded cut corners.
@@ -587,7 +595,8 @@ export class MineEngine {
       const rim=new THREE.Mesh(new THREE.TorusGeometry(2.91,.27,12,48),housing);
       rim.position.z=depth;this.add(rim,fanGroup);
       const thin=new THREE.Mesh(new THREE.TorusGeometry(2.68,.066,8,48),unlit(0x19edff));
-      thin.position.z=depth+.07;this.add(thin,fanGroup);
+      thin.position.z=depth+.07;thin.userData.dynamic=true;this.add(thin,fanGroup);
+      this.fanRims.push(thin);
     }
     this.fanSpin=new THREE.Group();this.fanSpin.position.z=.18;this.add(this.fanSpin,fanGroup);
     const bladeMat=mat(0xc9a34b,.8,.36,{side:THREE.DoubleSide});
@@ -625,7 +634,78 @@ export class MineEngine {
       halo.rotation.x=Math.PI/2;halo.position.y=-.02;this.add(halo,marker);
       const hit=new THREE.Mesh(new THREE.SphereGeometry(.86,12,9),unlit(0x00eeff,{transparent:true,opacity:0,depthWrite:false}));
       hit.position.y=.04;this.add(hit,marker);
-      this.zoneLights.set(id,{signal,halo});
+      // False-colour methane volume: size and opacity follow the zone's Ditto CH4 reading.
+      const gas=new THREE.Mesh(new THREE.SphereGeometry(1,18,12),unlit(YELLOW,{transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));
+      gas.position.copy(pos).add(point(0,-.4,0));gas.visible=false;gas.userData.dynamic=true;this.add(gas);
+      this.zoneLights.set(id,{signal,halo,gas,level:0});
+    }
+  }
+  mergeStaticMeshes(){
+    this.scene.updateMatrixWorld(true);
+    const keep=new Set();
+    for(const root of [this.fanSpin,...this.clickTargets])root?.traverse(o=>keep.add(o));
+    const buckets=new Map(), victims=[];
+    this.group.traverse(o=>{
+      if(!o.isMesh||o.isInstancedMesh||keep.has(o)||o.userData.dynamic||Array.isArray(o.material))return;
+      const key=materialKey(o.material)+(o.userData.beam?'|beam':'');
+      let bucket=buckets.get(key);
+      if(!bucket){bucket={material:o.material,geometries:[],beam:Boolean(o.userData.beam)};buckets.set(key,bucket);}
+      if(this.structuralMaterials.includes(o.material)&&!this.structuralMaterials.includes(bucket.material))this.structuralMaterials.push(bucket.material);
+      const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();
+      g.applyMatrix4(o.matrixWorld);
+      for(const name of Object.keys(g.attributes))if(!['position','normal','color'].includes(name))g.deleteAttribute(name);
+      if(!g.attributes.normal)g.computeVertexNormals();
+      bucket.geometries.push(g);victims.push(o);
+    });
+    const representatives=new Set([...buckets.values()].map(b=>b.material));
+    for(const o of victims){
+      o.parent.remove(o);o.geometry.dispose();
+      if(!representatives.has(o.material))o.material.dispose();
+    }
+    this.structuralMaterials=this.structuralMaterials.filter(m=>representatives.has(m));
+    for(const bucket of buckets.values()){
+      const merged=mergeGeometries(bucket.geometries,false);
+      bucket.geometries.forEach(g=>g.dispose());
+      if(!merged)continue;
+      const mesh=new THREE.Mesh(merged,bucket.material);
+      this.group.add(mesh);
+      if(bucket.beam)this.beamMeshes.push(mesh);
+    }
+  }
+  useLambertMaterials(){
+    // Physically based shading is the dominant per-pixel cost under SwiftShader/llvmpipe.
+    const swaps=new Map();
+    this.scene.traverse(o=>{
+      if(!o.isMesh||!o.material?.isMeshStandardMaterial)return;
+      const s=o.material;
+      if(!swaps.has(s))swaps.set(s,new THREE.MeshLambertMaterial({color:s.color,emissive:s.emissive,emissiveIntensity:s.emissiveIntensity,
+        flatShading:s.flatShading,side:s.side,transparent:s.transparent,opacity:s.opacity,vertexColors:s.vertexColors,depthWrite:s.depthWrite,wireframe:s.wireframe}));
+      o.material=swaps.get(s);
+    });
+    this.structuralMaterials=this.structuralMaterials.map(m=>swaps.get(m)??m);
+    swaps.forEach((_,s)=>s.dispose());
+  }
+  buildFlowInstances(){
+    const instanced=(geometry,material,count)=>{
+      const mesh=new THREE.InstancedMesh(geometry,material,Math.max(1,count));
+      mesh.count=count;mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      this.group.add(mesh);return mesh;
+    };
+    this.particleMesh=instanced(new THREE.SphereGeometry(.105,6,5),this.flowMats.particle,this.particleSpecs.length);
+    this.arrowMesh=instanced(new THREE.ConeGeometry(.37,.98,5),this.flowMats.arrow,this.arrowSpecs.length);
+    this.flowProxy=new THREE.Object3D();this.flowPoint=new THREE.Vector3();this.flowTangent=new THREE.Vector3();
+    this.updateFlowInstances(0);
+  }
+  updateFlowInstances(intensity){
+    const proxy=this.flowProxy;
+    for(const [mesh,specs,rate,orient] of [[this.particleMesh,this.particleSpecs,.09,false],[this.arrowMesh,this.arrowSpecs,.032,true]]){
+      specs.forEach((spec,i)=>{
+        const t=((spec.phase+this.elapsed*rate*spec.speed*intensity)%1+1)%1;
+        proxy.position.copy(spec.curve.getPoint(t,this.flowPoint));
+        if(orient)proxy.quaternion.setFromUnitVectors(VERTICAL,spec.curve.getTangent(t,this.flowTangent).normalize());
+        proxy.updateMatrix();mesh.setMatrixAt(i,proxy.matrix);
+      });
+      mesh.instanceMatrix.needsUpdate=true;
     }
   }
   setState(data, selected, airflow, wireframe){
@@ -636,16 +716,23 @@ export class MineEngine {
       this.wireframe=wireframe;
       this.structuralMaterials.forEach(m=>m.wireframe=wireframe);
     }
-    for(const obj of this.flowMeshes)obj.mesh.visible=airflow;
+    for(const mesh of [...this.beamMeshes,this.particleMesh,this.arrowMesh])if(mesh)mesh.visible=airflow;
     for(const [id,parts] of this.zoneLights){
       const z=data?.zones?.find(v=>v.id===id);
-      const warning=z?.ch4!=null&&z.ch4>=.5;
-      const elevated=z?.ch4!=null&&z.ch4>=.3;
-      const color=warning?ALERT:(id===selected||elevated)?YELLOW:AQUA;
+      // Marker colour is the twin's risk state, not a renderer-side threshold.
+      const color=RISK_COLOR[z?.risk]??UNKNOWN;
       parts.signal.material.color.setHex(color);
       parts.halo.material.color.setHex(color);
-      parts.halo.scale.setScalar(id===selected?1.3:1);
+      parts.halo.scale.setScalar(id===selected?1.45:1);
+      // Methane volume appears above 0.2 % and saturates at the 1.5 % emergency tier.
+      const level=z?.ch4==null?0:math.clamp((z.ch4-.2)/1.3,0,1);
+      parts.level=level;
+      parts.gas.visible=level>.01;
+      parts.gas.material.color.setHex(level>.6?ALERT:YELLOW);
+      parts.gas.material.opacity=.1+.32*level;
     }
+    const faulted=Boolean(data?.fan?.faulted);
+    for(const rim of this.fanRims)rim.material.color.setHex(faulted?ALERT:0x19edff);
   }
   getPositions(){
     const rect=this.renderer.domElement.getBoundingClientRect();
@@ -656,33 +743,42 @@ export class MineEngine {
     }
     return result;
   }
-  loop(){
+  loop(now=performance.now()){
     if(this.disposed)return;
-    const dt=Math.min(this.clock.getDelta(),.065);
+    // CPU WebGL: cap at ~20 fps so rendering never starves the page's input and data updates.
+    if(this.softwareRenderer&&now-this.lastRender<50){this.frame=requestAnimationFrame(this.loop);return;}
+    this.lastRender=now;
+    const dt=Math.min(this.clock.getDelta(),.1);
     this.elapsed+=dt;
     this.controls.update();
     const rpm=this.data?.fan?.rpm ?? 0;
     if(this.fanSpin)this.fanSpin.rotation.z+=dt*Math.max(0,rpm/2850)*5;
-    if(this.airflow){
+    if(this.airflow&&this.particleMesh){
+      // Particle speed follows the twin's intake airflow; zero flow (fan failure) stops them.
       const flow=this.data?.fan?.flow;
-      const intensity=flow==null?1:math.clamp(flow/142.5,0,1.6);
-      for(const v of this.flowMeshes){
-        if(v.kind!=='particle' && v.kind!=='movingArrow')continue;
-        const t=(v.phase+this.elapsed*(v.kind==='particle'?.09:.032)*v.speed*intensity)%1;
-        v.mesh.position.copy(v.curve.getPoint(t));
-        if(v.kind==='movingArrow')v.mesh.quaternion.setFromUnitVectors(VERTICAL,v.curve.getTangent(t).normalize());
-      }
+      this.updateFlowInstances(flow==null?1:math.clamp(flow/142.5,0,1.6));
+    }
+    for(const parts of this.zoneLights.values()){
+      if(parts.gas.visible)parts.gas.scale.setScalar((.9+2.3*parts.level)*(1+.06*Math.sin(this.elapsed*2.1)));
     }
     this.renderer.render(this.scene,this.camera);
+    this.renderedFrames=(this.renderedFrames??0)+1;
+    if(now-(this.fpsWindowStart??now)>=1000||this.fpsWindowStart==null){
+      if(this.fpsWindowStart!=null)this.renderer.domElement.dataset.renderFps=(this.renderedFrames*1000/(now-this.fpsWindowStart)).toFixed(1);
+      this.fpsWindowStart=now;this.renderedFrames=0;
+    }
     this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);
     this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);
     this.renderer.domElement.dataset.camera=this.camera.position.toArray().map(v=>v.toFixed(3)).join(',');
-    if(this.onPositions&&(this.elapsed-this.lastLabelAt>.083)){
+    if(this.onPositions&&(this.elapsed-this.lastLabelAt>(this.softwareRenderer?.25:.083))){
       this.lastLabelAt=this.elapsed;
-      this.onPositions(this.getPositions());
+      // Label layout only changes with the camera or canvas size; skip DOM writes otherwise.
+      const view=[...this.camera.matrixWorld.elements,this.camera.aspect,this.renderer.domElement.clientWidth].map(v=>v.toFixed(3)).join();
+      if(view!==this.lastLabelView){this.lastLabelView=view;this.onPositions(this.getPositions());}
     }
     this.frame=requestAnimationFrame(this.loop);
   }
+  refreshLabels(){this.lastLabelView=null;this.lastLabelAt=-1;}
   recenter(){
     this.camera.position.copy(CAM_POS);
     this.controls.target.copy(CAM_TARGET);
@@ -708,6 +804,7 @@ export class MineEngine {
       if(o.geometry)geo.add(o.geometry);
       if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>mats.add(m));
     });
+    Object.values(this.flowMats).forEach(m=>mats.add(m));
     geo.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());
     this.renderer.dispose();this.renderer.domElement.remove();
   }
