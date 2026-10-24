@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-15",
+  "simulation_only": true,
+  "milestones": {
+    "M5": {"result": "PASS", "backend_tests": 147, "frontend_tests": 3, "ui_url": "http://127.0.0.1:8091", "live_ditto_twin": "mineguard:zone-z04"},
+    "M6": {"result": "PASS", "backend_tests": 151, "frontend_tests": 4, "scenario": "S2_MAIN_FAN_FAILURE", "local_risk": "EMERGENCY", "ditto_risk": "EMERGENCY", "ditto_tick": 60, "reset_tick": 0},
+    "M7": {"result": "PASS", "backend_tests": 152, "frontend_tests": 4, "decision_status": "SELECTED", "same_initial_state": true, "optimized_constraints_met": true},
+    "M8": {"result": "PASS", "bootstrap": "PASS", "official_smoke": "PASS", "mineguard_full_smoke": "PASS"}
+  },
+  "limitations": "Counts are local software tests. Energy values are synthetic model estimates, not measured mine results."
+}

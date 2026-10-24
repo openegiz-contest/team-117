@@ -1,0 +1,36 @@
+{
+  "verified_at_utc": "2026-10-15T04:49:21Z",
+  "upstream_commit": "8d60b6dffdfd153e7257ecf5921327920aaba03f",
+  "result": "PASS",
+  "run_id": "m2-20261015T044921650397Z",
+  "simulation_only": true,
+  "local_gate": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS",
+    "mypy_strict_source_files": 16,
+    "pytest_passed": 112,
+    "pytest_seconds": 0.68
+  },
+  "snapshot": {
+    "tick": 20,
+    "simulated_seconds": 10.0,
+    "total_airflow_m3s": 39.62675005306711,
+    "max_methane_percent_volume": 0.1517854756427366
+  },
+  "platform": {
+    "ditto_verified_twins": [
+      "mineguard:fan-aux",
+      "mineguard:fan-main",
+      "mineguard:mine-01",
+      "mineguard:zone-z01",
+      "mineguard:zone-z02",
+      "mineguard:zone-z03",
+      "mineguard:zone-z04",
+      "mineguard:zone-z05",
+      "mineguard:zone-z06"
+    ],
+    "influx_verified_twin": "mineguard:zone-z04",
+    "bootstrap_state": "all nine schema-v2 twins already present and unchanged on final run"
+  },
+  "claim_limit": "Software integration and numerical consistency for fictional inputs; not real-mine accuracy, performance, or safety certification."
+}

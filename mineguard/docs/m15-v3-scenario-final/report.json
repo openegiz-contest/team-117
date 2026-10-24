@@ -1,0 +1,55 @@
+{
+  "captured_at": "2026-10-24T14:28:38.826Z",
+  "simulation_only": true,
+  "risk_stages": [
+    {
+      "risk": "ADVISORY",
+      "tick": 18,
+      "seconds": 9,
+      "methane_percent": 0.5102381273153408
+    },
+    {
+      "risk": "WARNING",
+      "tick": 47,
+      "seconds": 23.5,
+      "methane_percent": 1.0043935538881934
+    },
+    {
+      "risk": "EMERGENCY",
+      "tick": 84,
+      "seconds": 42,
+      "methane_percent": 1.5072079808920327
+    }
+  ],
+  "browser_errors": [],
+  "rendering": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "render_profile": "v3-software-0.55",
+    "canvas_pixels": [
+      631,
+      534
+    ],
+    "sample_ms": 3582.2999999999993,
+    "frames": 3,
+    "approximate_raf_fps": 0.5583005331770093,
+    "draw_calls": "1227",
+    "triangles": "196564",
+    "viewport": [
+      1680,
+      1120
+    ]
+  },
+  "ditto_emergency_verified": true,
+  "simulated_fan_response_verified": true,
+  "fan_failure_verified": true,
+  "reset": {
+    "status": "ready",
+    "simulation_running": true,
+    "simulation_error": "NONE",
+    "platform_configured": true,
+    "platform_connected": true,
+    "platform_error": "NONE",
+    "platform_last_verified_tick": 0,
+    "source_type": "SYNTHETIC_PHYSICS"
+  }
+}

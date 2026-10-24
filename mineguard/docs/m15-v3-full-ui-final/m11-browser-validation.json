@@ -1,0 +1,39 @@
+{
+  "checked_at": "2026-10-24T14:21:13.049Z",
+  "base": "http://127.0.0.1:8091",
+  "webgl": true,
+  "zones": 6,
+  "zone_selection": true,
+  "stable_camera": true,
+  "sensor_toggle": true,
+  "rendering": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "render_profile": "v3-software-0.55",
+    "sample_ms": 3282.2999999999993,
+    "approximate_raf_fps": 1.2186576486000673,
+    "draw_calls": "1230",
+    "triangles": "196708",
+    "canvas_pixels": [
+      631,
+      512
+    ],
+    "canvas_css": [
+      1148,
+      931
+    ]
+  },
+  "direct_routes": [
+    "/twins",
+    "/scenarios",
+    "/energy",
+    "/evidence"
+  ],
+  "responsive_routes": [
+    "/",
+    "/twins",
+    "/scenarios",
+    "/energy",
+    "/evidence"
+  ],
+  "browser_errors": []
+}

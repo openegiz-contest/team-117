@@ -1,0 +1,60 @@
+{
+  "mineguard:zone-z01": {
+    "policyId": "default:basic_policy",
+    "attributes": {
+      "name": "MineGuard X intake shaft",
+      "display_name": "Intake shaft",
+      "zone_type": "intake",
+      "_isType": false,
+      "simulation_only": true,
+      "model_stage": "M0_BOOTSTRAP",
+      "fan_ids": ["mineguard:fan-main"],
+      "assumption_source": "Fictional mine from the team Master Blueprint; numerical physics parameters pending M1"
+    },
+    "features": {
+      "gas": {"properties": {"methane_pct": null, "co_ppm": null}},
+      "ventilation": {"properties": {"airflow_m3s": null, "pressure_pa": null}},
+      "telemetry_health": {
+        "properties": {
+          "quality": "STALE",
+          "source_type": "SYNTHETIC_BOOTSTRAP",
+          "updated_at": null,
+          "reason_codes": ["AWAITING_SIMULATOR"]
+        }
+      },
+      "risk": {"properties": {"state": "UNKNOWN_DATA", "reasons": ["NO_TELEMETRY"]}}
+    }
+  },
+  "mineguard:fan-main": {
+    "policyId": "default:basic_policy",
+    "attributes": {
+      "name": "MineGuard X main ventilation fan",
+      "display_name": "Main ventilation fan",
+      "_isType": false,
+      "simulation_only": true,
+      "model_stage": "M0_BOOTSTRAP",
+      "associated_zone_ids": ["mineguard:zone-z01"],
+      "assumption_source": "Fictional mine from the team Master Blueprint; fan model parameters pending M2"
+    },
+    "features": {
+      "command": {"properties": {"requested_speed_pct": null, "issued_at": null, "command_id": null}},
+      "feedback": {
+        "properties": {
+          "actual_speed_pct": null,
+          "power_kw": null,
+          "status": "UNINITIALIZED",
+          "acknowledged_command_id": null
+        }
+      },
+      "health": {"properties": {"fault": null, "updated_at": null}},
+      "telemetry_health": {
+        "properties": {
+          "quality": "STALE",
+          "source_type": "SYNTHETIC_BOOTSTRAP",
+          "updated_at": null,
+          "reason_codes": ["AWAITING_SIMULATOR"]
+        }
+      }
+    }
+  }
+}

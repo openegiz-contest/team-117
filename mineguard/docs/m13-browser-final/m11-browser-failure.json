@@ -1,0 +1,18 @@
+{
+  "diagnostic": {
+    "title": "MineGuard X Command Center",
+    "heading": "Engineering Evidence",
+    "body": "MX\nMineGuard X\nDEEPCORE LABS\n3D Command Center\nTwin Inspector\nScenario Lab\nEnergy\nEvidence\n\nREPRODUCIBLE ENGINEERING RECORD\n\nEngineering Evidence\n\nTrace model equations, limitations, provenance, and current decisions back to inspectable implementation evidence.\n\nTRACEABLE\nSimulation evidence\nImplemented equations\n3\nDeclared limitations\n3\nEvidence source\nSYNTHETIC_PHYSICS\nImplemented equations\nEXECUTABLE MODEL BASIS\n01\nFAN CURVE\ndelta_p = shutoff_pressure * speed^2 - K * flow^2\n02\nFAN POWER\npower = rated_power * speed^3\n03\nGAS BALANCE\nV dc/dt = sum(q_in*c_in) - sum(q_out*c) + source\nDeclared limitations\nCLAIMS BOUNDARY\nFictional uncalibrated geometry and parameters\nNo real equipment integration\nCalculated energy is a model estimate, not measured savings\nModel source\nSYNTHETIC_PHYSICS · simulation only\nLive decision evidence\nRaw audit record",
+    "canvases": 0,
+    "labels": 0
+  },
+  "browserErrors": [
+    {
+      "text": "Uncaught",
+      "description": "NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.\n    at Tu (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:107411)\n    at Au (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:109062)\n    at Mu (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:112128)\n    at sf (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:130213)\n    at rf (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:129923)\n    at nf (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:129405)\n    at Id (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:124920)\n    at Fd (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:124224)\n    at Mf (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:136030)\n    at Df (http://127.0.0.1:8091/assets/index-D717WQMi.js:9:134594)",
+      "url": "http://127.0.0.1:8091/assets/index-D717WQMi.js",
+      "line": 8,
+      "column": 107410
+    }
+  ]
+}

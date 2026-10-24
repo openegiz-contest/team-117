@@ -1,0 +1,119 @@
+{
+  "ready": {
+    "status": "ready",
+    "simulation_running": true,
+    "simulation_error": "NONE",
+    "platform_configured": true,
+    "platform_connected": true,
+    "platform_error": "NONE",
+    "platform_last_verified_tick": 84,
+    "source_type": "SYNTHETIC_PHYSICS"
+  },
+  "twin": {
+    "thingId": "mineguard:zone-z04",
+    "policyId": "default:basic_policy",
+    "attributes": {
+      "_isType": false,
+      "simulation_only": true,
+      "model_stage": "M10_MULTI_GAS",
+      "schema_version": 3,
+      "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
+      "name": "MineGuard X Production face / Zone 4B",
+      "display_name": "Production face / Zone 4B",
+      "zone_id": "Z04",
+      "zone_type": "production",
+      "_parents": "mineguard:mine-01"
+    },
+    "features": {
+      "idSimulationRun": {
+        "properties": {
+          "value": "live-20261023T230811865896Z-6"
+        }
+      },
+      "methane": {
+        "properties": {
+          "value": 1.50720798,
+          "unit": "% volume",
+          "quality": "GOOD",
+          "source_type": "SYNTHETIC_PHYSICS"
+        }
+      },
+      "co": {
+        "properties": {
+          "value": 9.74035454,
+          "unit": "ppm",
+          "quality": "GOOD",
+          "source_type": "SYNTHETIC_PHYSICS"
+        }
+      },
+      "airflow": {
+        "properties": {
+          "value": 31.91775254,
+          "unit": "m3/s",
+          "quality": "GOOD",
+          "source_type": "SYNTHETIC_PHYSICS"
+        }
+      },
+      "simulation": {
+        "properties": {
+          "value": true,
+          "tick": 84,
+          "simulated_seconds": 42
+        }
+      },
+      "risk": {
+        "properties": {
+          "value": "EMERGENCY",
+          "reason_codes": [
+            "METHANE_EMERGENCY"
+          ],
+          "quality": "GOOD",
+          "source_type": "SYNTHETIC_PHYSICS",
+          "simulation_only": true
+        }
+      },
+      "safety_interlock": {
+        "properties": {
+          "value": "TRIPPED",
+          "trip_power": true,
+          "evacuation_advisory": true,
+          "ventilation_response": true,
+          "optimization_enabled": false,
+          "reason_codes": [
+            "METHANE_EMERGENCY"
+          ],
+          "simulation_only": true,
+          "equipment_io": false
+        }
+      }
+    }
+  },
+  "safety": {
+    "zone_id": "Z04",
+    "risk_state": "EMERGENCY",
+    "production_stop": true,
+    "evacuation_advisory": true,
+    "ventilation_response": true,
+    "optimization_enabled": false,
+    "simulation_only": true,
+    "reason_codes": [
+      "METHANE_EMERGENCY"
+    ],
+    "fan_requests": [
+      {
+        "fan_id": "FAN_AUX",
+        "command_id": "sim-84-Z04-FAN_AUX",
+        "requested_speed_fraction": 1,
+        "actual_speed_fraction": 1,
+        "status": "ACHIEVED"
+      },
+      {
+        "fan_id": "FAN_MAIN",
+        "command_id": "sim-84-Z04-FAN_MAIN",
+        "requested_speed_fraction": 1,
+        "actual_speed_fraction": 1,
+        "status": "ACHIEVED"
+      }
+    ]
+  }
+}

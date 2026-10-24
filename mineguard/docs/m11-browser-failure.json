@@ -1,0 +1,10 @@
+{
+  "diagnostic": {
+    "title": "MineGuard X Command Center",
+    "heading": "MINEGUARD X",
+    "body": "MX\nMineGuard X\nDEEPCORE LABS\n3D Command Center\nTwin Inspector\nScenario Lab\nEnergy\nEvidence\nSIMULATION ONLY\nMINEGUARD X\nLIVE DIGITAL TWIN\nOPENEGIZ · ECLIPSE DITTO · SIMULATION ONLY\nCONNECTED\nWebSocket live · Tick 146 · T+73.0s\nSYSTEM RISK\nNORMAL\nPeak CO\n9.2 ppm\nIntake flow\n39.6 m³/s\nFan load\n70.3 kW\nSimulate methane outburst\nOverview\nTop\nAirflow\nFocus\nLayers\nAirflow\nGas\nSensors\nStructure\nLIVE SPATIAL TWIN\nZ02\n0.002%\nNORMAL\nZ03\n0.061%\nNORMAL\nZ04\n0.159%\nNORMAL\nZ05\n0.128%\nNORMAL\nZ06\n0.129%\nNORMAL\nFAN_AUX\n725 RPM · 50% · 2.8 kW\nFAN_MAIN\n735 RPM · 75% · 67.5 kW\nDITTO-LINKED MODEL · T+73.0s\nDrag to orbit · Scroll to zoom · Select any zone\nNORMAL\nADVISORY\nWARNING\nEMERGENCY\nUNKNOWN DATA\nSELECTED SECTOR\nZ04 · Production face / Zone 4B\nMETHANE\n0.159 % vol\nCARBON MONOXIDE\n8.7 ppm\nAIRFLOW\n24.7 m³/s\nDEPTH\n350 m\nQUALITY\nGOOD\n\nWITHIN_DEMO_CONSTRAINTS\n\nZ01\n0.00%\nZ02\n0.00%\nZ03\n0.06%\nZ04\n0.16%\nZ05\n0.13%\nZ06\n0.13%\n\nDECISION SUPPORT\n\nActive conditions\n0\n\nNo model constraints are currently exceeded.\n\nROLLING LIVE TELEMETRY\n\nZ04 methane & airflow\n% vol · m³/s\n\nLatest CO: 8.7 ppm · sampled at T+73.0s\n\n1s\n5s\n9s\n14s\n20s\n25s\n31s\n36s\n42s\n51s\n62s\n73s\n0\n0.04\n0.08\n0.12\n0.16\n0\n7\n14\n21\n28\nFictional, uncalibrated physics model · All lockout, evacuation, and actuator actions are simulated · Sensor uncertainty is never treated as safe\n73s",
+    "canvases": 1,
+    "labels": 5
+  },
+  "browserErrors": []
+}

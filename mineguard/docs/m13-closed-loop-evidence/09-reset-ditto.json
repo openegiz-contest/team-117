@@ -1,0 +1,79 @@
+{
+  "thingId": "mineguard:zone-z04",
+  "policyId": "default:basic_policy",
+  "attributes": {
+    "_isType": false,
+    "simulation_only": true,
+    "model_stage": "M10_MULTI_GAS",
+    "schema_version": 3,
+    "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
+    "name": "MineGuard X Production face / Zone 4B",
+    "display_name": "Production face / Zone 4B",
+    "zone_id": "Z04",
+    "zone_type": "production",
+    "_parents": "mineguard:mine-01"
+  },
+  "features": {
+    "idSimulationRun": {
+      "properties": {
+        "value": "live-20261023T230811865896Z-10"
+      }
+    },
+    "methane": {
+      "properties": {
+        "value": 0.15,
+        "unit": "% volume",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "co": {
+      "properties": {
+        "value": 12,
+        "unit": "ppm",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "airflow": {
+      "properties": {
+        "value": 24.71048883,
+        "unit": "m3/s",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "simulation": {
+      "properties": {
+        "value": true,
+        "tick": 0,
+        "simulated_seconds": 0
+      }
+    },
+    "risk": {
+      "properties": {
+        "value": "NORMAL",
+        "reason_codes": [
+          "WITHIN_DEMO_CONSTRAINTS"
+        ],
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS",
+        "simulation_only": true
+      }
+    },
+    "safety_interlock": {
+      "properties": {
+        "value": "CLEAR",
+        "trip_power": false,
+        "evacuation_advisory": false,
+        "ventilation_response": false,
+        "optimization_enabled": true,
+        "reason_codes": [
+          "WITHIN_DEMO_CONSTRAINTS"
+        ],
+        "simulation_only": true,
+        "equipment_io": false
+      }
+    }
+  }
+}

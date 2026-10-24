@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-23T18:55:20.978Z",
+  "base": "http://127.0.0.1:8091",
+  "webgl": true,
+  "zones": 6,
+  "keyboard_2d_selection": true,
+  "direct_routes": [
+    "/twins",
+    "/scenarios",
+    "/energy",
+    "/evidence"
+  ],
+  "browser_errors": []
+}

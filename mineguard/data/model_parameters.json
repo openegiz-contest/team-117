@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "simulation_only": true,
+  "source_type": "SYNTHETIC_PHYSICS",
+  "assumption_source": "DeepCore Labs fictional demonstration. Initial methane and carbon-monoxide fractions and source volumes are explicit uncalibrated assumptions at common pressure/temperature. Gas thresholds are demonstration settings, not legal safety limits; no measured site parameters are used.",
+  "tick_seconds": 0.5,
+  "cfl_limit": 0.5,
+  "max_substeps": 10000,
+  "initial_zones": [
+    {
+      "zone_id": "Z01",
+      "methane_fraction": 0.00002,
+      "methane_source_m3s": 0,
+      "co_fraction": 0.000002,
+      "co_source_m3s": 0
+    },
+    {
+      "zone_id": "Z02",
+      "methane_fraction": 0.00002,
+      "methane_source_m3s": 0,
+      "co_fraction": 0.000002,
+      "co_source_m3s": 0
+    },
+    {
+      "zone_id": "Z03",
+      "methane_fraction": 0.0007,
+      "methane_source_m3s": 0.008,
+      "co_fraction": 0.000008,
+      "co_source_m3s": 0.00005
+    },
+    {
+      "zone_id": "Z04",
+      "methane_fraction": 0.0015,
+      "methane_source_m3s": 0.04,
+      "co_fraction": 0.000012,
+      "co_source_m3s": 0.00012
+    },
+    {
+      "zone_id": "Z05",
+      "methane_fraction": 0.0013,
+      "methane_source_m3s": 0.002,
+      "co_fraction": 0.00001,
+      "co_source_m3s": 0
+    },
+    {
+      "zone_id": "Z06",
+      "methane_fraction": 0.0013,
+      "methane_source_m3s": 0,
+      "co_fraction": 0.000008,
+      "co_source_m3s": 0
+    }
+  ],
+  "initial_fans": [
+    {
+      "fan_id": "FAN_MAIN",
+      "speed_fraction": 0.75,
+      "faulted": false
+    },
+    {
+      "fan_id": "FAN_AUX",
+      "speed_fraction": 0.5,
+      "faulted": false
+    }
+  ],
+  "risk_thresholds": {
+    "advisory_methane_fraction": 0.005,
+    "warning_methane_fraction": 0.01,
+    "emergency_methane_fraction": 0.015,
+    "clear_hysteresis_fraction": 0.001,
+    "advisory_co_fraction": 0.000025,
+    "warning_co_fraction": 0.000035,
+    "emergency_co_fraction": 0.00005,
+    "clear_co_hysteresis_fraction": 0.000005,
+    "minimum_airflow_m3s": 5.0,
+    "stale_after_seconds": 5.0
+  },
+  "vod": {
+    "candidate_speed_fractions": [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    "max_speed_step_fraction": 0.2,
+    "forecast_horizon_seconds": 60.0,
+    "switching_penalty_kwh_per_fraction": 0.05
+  }
+}

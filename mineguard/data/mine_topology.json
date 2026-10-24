@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "mine_id": "mineguard:mine-01",
+  "simulation_only": true,
+  "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
+  "zones": [
+    {
+      "id": "Z01",
+      "name": "Intake shaft",
+      "role": "intake",
+      "volume_m3": 2000,
+      "depth_m": 100,
+      "x": 50,
+      "y": 180
+    },
+    {
+      "id": "Z02",
+      "name": "Main intake gallery",
+      "role": "distribution",
+      "volume_m3": 3600,
+      "depth_m": 280,
+      "x": 200,
+      "y": 180
+    },
+    {
+      "id": "Z03",
+      "name": "Development heading",
+      "role": "heading",
+      "volume_m3": 1200,
+      "depth_m": 320,
+      "x": 400,
+      "y": 80
+    },
+    {
+      "id": "Z04",
+      "name": "Production face / Zone 4B",
+      "role": "production",
+      "volume_m3": 1800,
+      "depth_m": 350,
+      "x": 400,
+      "y": 280
+    },
+    {
+      "id": "Z05",
+      "name": "Return gallery",
+      "role": "return",
+      "volume_m3": 3000,
+      "depth_m": 280,
+      "x": 600,
+      "y": 180
+    },
+    {
+      "id": "Z06",
+      "name": "Return shaft",
+      "role": "exhaust",
+      "volume_m3": 2200,
+      "depth_m": 100,
+      "x": 750,
+      "y": 180
+    }
+  ],
+  "airways": [
+    {
+      "id": "E01",
+      "from": "Z01",
+      "to": "Z02",
+      "length_m": 300,
+      "resistance_pa_s2_m6": 0.12,
+      "flow_m3s": 40,
+      "status": "OPEN"
+    },
+    {
+      "id": "E02",
+      "from": "Z02",
+      "to": "Z03",
+      "length_m": 200,
+      "resistance_pa_s2_m6": 0.3,
+      "flow_m3s": 12,
+      "status": "OPEN"
+    },
+    {
+      "id": "E03",
+      "from": "Z02",
+      "to": "Z04",
+      "length_m": 250,
+      "resistance_pa_s2_m6": 0.2,
+      "flow_m3s": 28,
+      "status": "OPEN"
+    },
+    {
+      "id": "E04",
+      "from": "Z03",
+      "to": "Z05",
+      "length_m": 220,
+      "resistance_pa_s2_m6": 0.3,
+      "flow_m3s": 12,
+      "status": "OPEN"
+    },
+    {
+      "id": "E05",
+      "from": "Z04",
+      "to": "Z05",
+      "length_m": 260,
+      "resistance_pa_s2_m6": 0.2,
+      "flow_m3s": 28,
+      "status": "OPEN"
+    },
+    {
+      "id": "E06",
+      "from": "Z05",
+      "to": "Z06",
+      "length_m": 320,
+      "resistance_pa_s2_m6": 0.12,
+      "flow_m3s": 40,
+      "status": "OPEN"
+    }
+  ],
+  "fans": [
+    {
+      "id": "FAN_MAIN",
+      "zone_id": "Z06",
+      "airway_ids": [
+        "E06"
+      ],
+      "rated_power_kw": 160,
+      "rated_speed_rpm": 980,
+      "shutoff_pressure_pa": 2500,
+      "curve_resistance_pa_s2_m6": 0.5,
+      "efficiency": 0.72
+    },
+    {
+      "id": "FAN_AUX",
+      "zone_id": "Z03",
+      "airway_ids": [
+        "E02"
+      ],
+      "rated_power_kw": 22,
+      "rated_speed_rpm": 1450,
+      "shutoff_pressure_pa": 180,
+      "curve_resistance_pa_s2_m6": 0.7,
+      "efficiency": 0.62
+    }
+  ],
+  "sensors": [
+    {
+      "id": "sensor-airflow-z01",
+      "zone_id": "Z01",
+      "quantity": "airflow",
+      "unit": "m3/s"
+    },
+    {
+      "id": "sensor-temperature-z01",
+      "zone_id": "Z01",
+      "quantity": "temperature",
+      "unit": "degC"
+    },
+    {
+      "id": "sensor-airflow-z02",
+      "zone_id": "Z02",
+      "quantity": "airflow",
+      "unit": "m3/s"
+    },
+    {
+      "id": "sensor-pressure-z02",
+      "zone_id": "Z02",
+      "quantity": "pressure",
+      "unit": "Pa"
+    },
+    {
+      "id": "sensor-methane-z03",
+      "zone_id": "Z03",
+      "quantity": "methane",
+      "unit": "percent_volume"
+    },
+    {
+      "id": "sensor-co-z03",
+      "zone_id": "Z03",
+      "quantity": "co",
+      "unit": "ppm"
+    },
+    {
+      "id": "sensor-airflow-z03",
+      "zone_id": "Z03",
+      "quantity": "airflow",
+      "unit": "m3/s"
+    },
+    {
+      "id": "sensor-methane-z04",
+      "zone_id": "Z04",
+      "quantity": "methane",
+      "unit": "percent_volume"
+    },
+    {
+      "id": "sensor-co-z04",
+      "zone_id": "Z04",
+      "quantity": "co",
+      "unit": "ppm"
+    },
+    {
+      "id": "sensor-airflow-z04",
+      "zone_id": "Z04",
+      "quantity": "airflow",
+      "unit": "m3/s"
+    },
+    {
+      "id": "sensor-temperature-z04",
+      "zone_id": "Z04",
+      "quantity": "temperature",
+      "unit": "degC"
+    },
+    {
+      "id": "sensor-methane-z05",
+      "zone_id": "Z05",
+      "quantity": "methane",
+      "unit": "percent_volume"
+    },
+    {
+      "id": "sensor-airflow-z05",
+      "zone_id": "Z05",
+      "quantity": "airflow",
+      "unit": "m3/s"
+    },
+    {
+      "id": "sensor-methane-z06",
+      "zone_id": "Z06",
+      "quantity": "methane",
+      "unit": "percent_volume"
+    },
+    {
+      "id": "sensor-airflow-z06",
+      "zone_id": "Z06",
+      "quantity": "airflow",
+      "unit": "m3/s"
+    },
+    {
+      "id": "sensor-pressure-z06",
+      "zone_id": "Z06",
+      "quantity": "pressure",
+      "unit": "Pa"
+    }
+  ],
+  "boundaries": [
+    {
+      "zone_id": "Z01",
+      "kind": "INLET",
+      "flow_m3s": 40,
+      "methane_fraction": 0.00002,
+      "co_fraction": 0.000002
+    },
+    {
+      "zone_id": "Z06",
+      "kind": "EXHAUST",
+      "flow_m3s": 40
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+services:
+  mineguard-backend:
+    build:
+      context: ../../mineguard
+      dockerfile: backend/Dockerfile
+    image: mineguard-x-backend:local
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: 256m
+    environment:
+      DITTO_URL: http://ditto-nginx
+      DITTO_USER: ditto
+      DITTO_PASSWORD: ${DITTO_PASSWORD}
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      MINEGUARD_PUBLISH_EVERY_TICKS: "60"
+      MINEGUARD_ALLOWED_ORIGINS: "http://127.0.0.1:${MINEGUARD_PORT:-8091},http://localhost:${MINEGUARD_PORT:-8091}"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      mosquitto:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  mineguard-ui:
+    build:
+      context: ../../mineguard/frontend
+    image: mineguard-x-ui:local
+    restart: unless-stopped
+    mem_limit: 64m
+    ports:
+      - "${OPENEGIZ_BIND:-127.0.0.1}:${MINEGUARD_PORT:-8091}:8080"
+    depends_on:
+      mineguard-backend:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=8m,uid=101,gid=101
+      - /var/run:size=2m,uid=101,gid=101
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"

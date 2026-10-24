@@ -1,0 +1,18 @@
+[
+  {
+    "id": "S1_METHANE_LEAK",
+    "name": "Production-face methane release",
+    "description": "Increase the fictional Z04 methane source and observe transport, risk, and simulated safety response.",
+    "duration_seconds": 180.0,
+    "methane_source_zone_id": "Z04",
+    "methane_source_m3s": 0.8
+  },
+  {
+    "id": "S2_MAIN_FAN_FAILURE",
+    "name": "Main ventilation fan failure",
+    "description": "Fail the simulated main fan after ten seconds and observe airflow loss and emergency precedence.",
+    "duration_seconds": 90.0,
+    "fan_failure_id": "FAN_MAIN",
+    "fan_failure_at_seconds": 10.0
+  }
+]

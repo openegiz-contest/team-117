@@ -1,0 +1,39 @@
+{
+  "milestone": "M4",
+  "date": "2026-10-15",
+  "result": "PASS",
+  "simulation_only": true,
+  "quality_gate": {
+    "pytest": "142 passed in 1.05s",
+    "ruff": "All checks passed",
+    "mypy": "Success: no issues found in 19 source files"
+  },
+  "initial_state_decision": {
+    "status": "SELECTED",
+    "main_fan_speed_fraction": 0.6,
+    "auxiliary_fan_speed_fraction": 0.4,
+    "forecast_horizon_seconds": 60.0,
+    "forecast_max_methane_fraction": 0.0017991017350315146,
+    "forecast_min_airflow_m3s": 11.933008975035298,
+    "baseline_energy_kwh": 1.1708333333333334,
+    "optimized_energy_kwh": 0.5994666666666666,
+    "calculated_savings_kwh": 0.5713666666666668,
+    "calculated_savings_percent": 48.800000000000004,
+    "baseline_constraints_met": true,
+    "optimized_constraints_met": true,
+    "model_limit": "Uncalibrated synthetic 60-second estimate; not measured industrial savings."
+  },
+  "openegiz_regression": {
+    "result": "PASS",
+    "run_id": "m2-20261015T062731935197Z",
+    "ditto_twins_verified": 9,
+    "influx_twin_verified": "mineguard:zone-z04"
+  },
+  "commands": [
+    "cd mineguard/backend && .venv/bin/python -m ruff check app tests",
+    "cd mineguard/backend && .venv/bin/python -m mypy app",
+    "cd mineguard/backend && .venv/bin/python -m pytest -q",
+    "cd mineguard/backend && .venv/bin/python -m app.control.vod_controller",
+    "mineguard/backend/.venv/bin/python mineguard/scripts/smoke_test.py"
+  ]
+}

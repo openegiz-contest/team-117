@@ -1,0 +1,28 @@
+{
+  "verified_at_utc": "2026-10-15T05:00:21Z",
+  "upstream_commit": "8d60b6dffdfd153e7257ecf5921327920aaba03f",
+  "result": "PASS",
+  "run_id": "m2-20261015T050021700677Z",
+  "simulation_only": true,
+  "local_gate": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS",
+    "mypy_strict_source_files": 18,
+    "pytest_passed": 131,
+    "pytest_seconds": 0.86
+  },
+  "verified_behaviors": [
+    "configured methane transitions and downgrade hysteresis",
+    "stale and invalid data yield UNKNOWN_DATA",
+    "main fan failure has EMERGENCY precedence",
+    "low airflow yields at least WARNING",
+    "emergency and uncertainty disable optimization",
+    "failed fan excluded and requested speed distinct from feedback",
+    "structured transition logging",
+    "six zone risk features read back from Ditto",
+    "matching run persisted in InfluxDB"
+  ],
+  "ditto_verified_twins": 9,
+  "influx_verified_twin": "mineguard:zone-z04",
+  "claim_limit": "All thresholds and actions are fictional and simulated; no legal-limit, real-equipment, or safety-certification claim."
+}
