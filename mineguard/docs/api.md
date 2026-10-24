@@ -1,33 +1,45 @@
 # MineGuard X API
 
 The browser uses the same-origin `/api` proxy at `http://127.0.0.1:8091`.
-Service credentials exist only in the backend container.
+Platform credentials exist only inside the backend container.
 
-Read routes:
+## Read routes
 
-- `GET /api/health/live` and `/api/health/ready`
-- `GET /api/v1/topology`, `/state`, and `/history`
-- `GET /api/v1/stream` as a WebSocket upgrade for one validated snapshot/second
-- `GET /api/v1/twins/{managed-thing-id}`
-- `GET /api/v1/vod/decision`, `/decision-trace`, and `/evidence`
-- `GET /api/v1/scenarios` and `/scenarios/state`
+| Route | Returns |
+|---|---|
+| `GET /api/health/live` | Simulation clock alive (200) or not (503) |
+| `GET /api/health/ready` | `ready` only when the clock runs **and** the latest MQTT publication was verified in Ditto; also reports `platform_last_verified_tick`, `state_source` and a credential-free `platform_error` |
+| `GET /api/v1/topology` | Versioned six-zone graph, airways, fans, sensors |
+| `GET /api/v1/state` | Latest state rebuilt from the Ditto readback (`publication_status: ECLIPSE_DITTO_READBACK`); 503 until the first readback |
+| `GET /api/v1/history` | Bounded history (240 samples) of Ditto readbacks |
+| `GET /api/v1/stream` | WebSocket: the current Ditto-readback state once per second |
+| `GET /api/v1/twins/{thing-id}` | Raw authenticated Ditto thing (only the nine managed IDs; others → 404) |
+| `GET /api/v1/vod/decision` | Constraint-first VOD decision with all candidates |
+| `GET /api/v1/decision-trace` | Risk assessments, safety decisions, VOD decision and constraints (evaluated on the controller's model state; includes `model_tick` and `platform_last_verified_tick`) |
+| `GET /api/v1/evidence` | Equations, units, limitations, decision trace and `validation` (live runtime checks) |
+| `GET /api/v1/scenarios`, `/api/v1/scenarios/state` | Scenario definitions and current run status |
 
-Simulation mutation routes:
+## Simulation commands
 
-- `POST /api/v1/scenarios/{scenario-id}/start`
-- `POST /api/v1/scenarios/pause`, `/resume`, and `/reset`
+`POST /api/v1/scenarios/{S1_METHANE_LEAK|S2_MAIN_FAN_FAILURE}/start`,
+`POST /api/v1/scenarios/pause`, `/resume`, `/reset`.
 
-Mutation requests require `X-MineGuard-Simulation: SIMULATION_ONLY`. Browser
-requests with an Origin must match the configured localhost allowlist. Backend
-ports remain internal to Compose; nginx exposes only the same-origin UI/API.
+They require the header `X-MineGuard-Simulation: SIMULATION_ONLY`. A browser
+Origin must match the configured localhost allowlist. They change only the
+simulation, never equipment.
 
-Snapshot messages include `source_type`, `simulation_only`, monotonic simulation
-time/tick, zone/airway/fan state, risk, and exact simulated safety decisions.
-Current M10 backend source adds zone `co_ppm` and fan `actual_speed_rpm`; frontend
-validation/presentation and the final post-change gates remain pending. Explicit
-units live in Ditto features, and quality/risk remain separate concepts.
+## Snapshot contract
 
-Readiness separates `platform_configured` from `platform_connected` and returns
-a credential-free `platform_error`. An unavailable Ditto read returns HTTP 503;
-an unknown managed ID returns 404. The UI never substitutes a fabricated safe
-reading. The WebSocket is read-only; all changes remain on guarded HTTP routes.
+`tick`, `simulated_seconds`, `paused`, `source_type: SYNTHETIC_PHYSICS`,
+`publication_status`, `simulation_only: true`, and:
+
+- `zones[]`: `methane_fraction` (volume fraction 0–1), `co_ppm`
+- `airways[]`: `flow_m3s`
+- `fans[]`: requested/actual speed fraction, `actual_speed_rpm`, `faulted`, `power_kw`
+- `risks[]`: state, reason codes, quality, methane, CO, airflow
+- `safety[]`: simulated production stop, evacuation advisory, ventilation
+  response, optimization flag, fan requests with `PENDING` / `ACHIEVED` /
+  `EXCLUDED_FAULTED` feedback
+
+The frontend validates every response at runtime (`src/api/contracts.ts`) and
+never substitutes a safe value for missing or stale data.

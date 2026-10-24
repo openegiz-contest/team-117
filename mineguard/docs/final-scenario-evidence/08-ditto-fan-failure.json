@@ -1,0 +1,71 @@
+{
+  "thingId": "mineguard:fan-main",
+  "policyId": "default:basic_policy",
+  "attributes": {
+    "_isType": false,
+    "simulation_only": true,
+    "model_stage": "M10_MULTI_GAS",
+    "schema_version": 3,
+    "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
+    "name": "MineGuard X FAN_MAIN",
+    "fan_id": "FAN_MAIN",
+    "kind": "ventilation-fan",
+    "rated_power_kw": 160,
+    "rated_speed_rpm": 980,
+    "_parents": "mineguard:mine-01",
+    "associated_zone_ids": [
+      "mineguard:zone-z06"
+    ]
+  },
+  "features": {
+    "idSimulationRun": {
+      "properties": {
+        "value": "live-20261024T204411791654Z-143"
+      }
+    },
+    "speed": {
+      "properties": {
+        "value": 0,
+        "unit": "% rated speed",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "requested_speed": {
+      "properties": {
+        "value": 75,
+        "unit": "% rated speed",
+        "source_type": "SYNTHETIC_PHYSICS",
+        "simulation_only": true
+      }
+    },
+    "rpm": {
+      "properties": {
+        "value": 0,
+        "unit": "rpm",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "power": {
+      "properties": {
+        "value": 0,
+        "unit": "kW",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "state": {
+      "properties": {
+        "value": "FAULTED"
+      }
+    },
+    "simulation": {
+      "properties": {
+        "value": true,
+        "tick": 22,
+        "simulated_seconds": 11
+      }
+    }
+  }
+}

@@ -85,6 +85,6 @@ boundary concentration are versioned in the same model data as methane.
 Fan actual RPM is `rated_speed_rpm * actual_speed_fraction`, and becomes zero
 for a faulted fan. Rated RPM is fictional nameplate metadata, so this calculation
 does not model slip, motor dynamics, tachometer error, or measured shaft speed.
-The CO/RPM additions require the final post-change source and live-stack gates
-before they count as completed M10 evidence. M2 historical real-stack evidence
-remains in `m2-validation.json`.
+
+Observed numerical behaviour: over live runs the maximum absolute balance
+residual of both tracers stays near 2e-15 m³ (see `validation.md`).

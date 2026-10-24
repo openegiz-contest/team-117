@@ -93,11 +93,18 @@ finally:
 def reset_observation() -> dict:
     ready = request("/health/ready")
     scenario = request("/v1/scenarios/state")
+    state = request("/v1/state")
     tick = ready.get("platform_last_verified_tick")
+    # Ditto is republished every second, so a reset appears as the verified tick
+    # restarting near zero with a cleared interlock in the platform readback.
     return {
         "passed": (
             ready["platform_connected"] is True
-            and tick == 0
+            and isinstance(tick, int)
+            and tick <= 10
+            and state["publication_status"] == "ECLIPSE_DITTO_READBACK"
+            and state["tick"] <= 20
+            and not any(item["production_stop"] for item in state["safety"])
             and scenario["status"] == "IDLE"
             and scenario["scenario_id"] is None
         ),

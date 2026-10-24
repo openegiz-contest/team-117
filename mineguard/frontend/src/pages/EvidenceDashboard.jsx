@@ -2,8 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import '../styles/evidence-exact.css';
 
 // Responsive, real DOM implementation of the supplied 1672x941 art direction.
-// A separate ?reference=1 mode is an EXACT pixel replica of the supplied PNG;
-// it is explicitly a non-live visual reference, not a fabricated backend screen.
+// Validation cards show only checks reported by the backend's runtime validation.
 const EQUATIONS = [
   {number:'01', name:'FAN CURVE', code:'delta_p = shutoff_pressure * speed^2 - K * flow^2'},
   {number:'02', name:'FAN POWER', code:'power = rated_power * speed^3'},

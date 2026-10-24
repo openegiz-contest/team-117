@@ -1,50 +1,52 @@
 # MineGuard X operations
 
-Run inside Ubuntu WSL from the official repository on the Linux filesystem.
+Run from the repository root on Linux (or Ubuntu under WSL2, on the Linux file
+system).
 
 ## Startup and health
 
 ```bash
-bash mineguard/scripts/bootstrap.sh
-bash mineguard/scripts/full-smoke.sh
+sudo apt-get install -y make          # if missing
+bash mineguard/scripts/bootstrap.sh   # official make up + MineGuard overlay
+bash mineguard/scripts/full-smoke.sh  # official make smoke + MineGuard checks
+bash mineguard/scripts/scenario-smoke.sh
 ```
 
-The first command preserves the official `make up` initialization/readiness
-sequence and then starts `mineguard-backend` and `mineguard-ui`. It does not
-remove unrelated services or volumes. Open <http://127.0.0.1:8091>.
-
-The combined smoke requires the official platform gate, MineGuard readiness,
-and a live Z04 Ditto readback. Readiness reports `platform_configured`,
-`platform_connected`, and a credential-free error class.
+`bootstrap.sh` keeps the official `make up` initialization and readiness
+sequence. It then builds and starts `mineguard-backend` and `mineguard-ui` and
+waits until readiness reports a verified Ditto readback. It removes no services
+or volumes and can be run again on a running stack. Open
+<http://127.0.0.1:8091>.
 
 ## Diagnostics
 
 ```bash
-make ps
-docker compose -f deploy/compose/docker-compose.yml \
-  -f mineguard/deploy/compose.mineguard.yml logs --tail=100 mineguard-backend
+docker compose -f deploy/compose/docker-compose.yml -f mineguard/deploy/compose.mineguard.yml ps
+docker compose -f deploy/compose/docker-compose.yml -f mineguard/deploy/compose.mineguard.yml logs --tail=100 mineguard-backend
 curl --fail http://127.0.0.1:8091/api/health/ready
 ```
 
-Never print or capture `deploy/compose/.env`, authorization headers, or expanded
-Compose configuration containing secrets. The backend port stays internal; the
-UI proxy is the localhost entry point.
+Never print `deploy/compose/.env`, authorization headers or an expanded Compose
+configuration. The backend port stays internal; the UI proxy is the only
+entry point.
 
-## Runtime behavior
+## Runtime behaviour
 
-Physics advances every 0.5 seconds. Platform publication runs in a separate
-bounded worker every 60 ticks (30 simulated seconds). The latest pending state
-replaces an older pending state if Ditto is slow, preventing platform I/O from
-stalling physics. The 30-second cadence passed official smoke on this 8 GB host;
-a tested 5-second full-nine-twin cadence caused official event/Influx timeouts
-and was rejected.
+- The physics clock ticks every 0.5 s. The publisher sends all nine twins every
+  2 ticks (`MINEGUARD_PUBLISH_EVERY_TICKS`, default 2 = 1 s) and verifies them by
+  Ditto readback. If Ditto is slow, the newest pending snapshot replaces an
+  older one, so I/O never stalls the physics.
+- Observed load at 1 Hz on the development host: Ditto `things` ≈ 28 % of one
+  CPU, `connectivity` ≈ 22 %; every container stayed inside its memory limit,
+  and the official `make smoke` passed while publishing.
+- Scenario reset restores the versioned baseline at tick 0 and republishes it
+  immediately.
 
-Scenario reset affects MineGuard's simulation only. Stop the extension while
-keeping official data with:
+## Stopping
 
 ```bash
-docker compose -f deploy/compose/docker-compose.yml \
-  -f mineguard/deploy/compose.mineguard.yml stop mineguard-ui mineguard-backend
+docker compose -f deploy/compose/docker-compose.yml -f mineguard/deploy/compose.mineguard.yml down
 ```
 
-Do not use `make clean`, `down -v`, or orphan removal for normal MineGuard work.
+Twins and time-series data are kept. `make clean` deletes all platform data and
+credentials.

@@ -1,0 +1,250 @@
+{
+  "tick": 7,
+  "simulated_seconds": 3.5,
+  "paused": false,
+  "source_type": "SYNTHETIC_PHYSICS",
+  "publication_status": "ECLIPSE_DITTO_READBACK",
+  "simulation_only": true,
+  "zones": [
+    {
+      "zone_id": "Z01",
+      "methane_fraction": 0.00002,
+      "co_ppm": 2
+    },
+    {
+      "zone_id": "Z02",
+      "methane_fraction": 0.00002,
+      "co_ppm": 2
+    },
+    {
+      "zone_id": "Z03",
+      "methane_fraction": 0.0006938648,
+      "co_ppm": 7.88692461
+    },
+    {
+      "zone_id": "Z04",
+      "methane_fraction": 0.0015065308,
+      "co_ppm": 11.75788308
+    },
+    {
+      "zone_id": "Z05",
+      "methane_fraction": 0.0012977385,
+      "co_ppm": 10.01857862
+    },
+    {
+      "zone_id": "Z06",
+      "methane_fraction": 0.0012999389,
+      "co_ppm": 8.12327334
+    }
+  ],
+  "airways": [
+    {
+      "airway_id": "E01",
+      "flow_m3s": 39.62675005
+    },
+    {
+      "airway_id": "E02",
+      "flow_m3s": 14.91626122
+    },
+    {
+      "airway_id": "E03",
+      "flow_m3s": 24.71048883
+    },
+    {
+      "airway_id": "E04",
+      "flow_m3s": 14.91626122
+    },
+    {
+      "airway_id": "E05",
+      "flow_m3s": 24.71048883
+    },
+    {
+      "airway_id": "E06",
+      "flow_m3s": 39.62675005
+    }
+  ],
+  "fans": [
+    {
+      "fan_id": "FAN_AUX",
+      "requested_speed_fraction": 0.5,
+      "actual_speed_fraction": 0.5,
+      "actual_speed_rpm": 725,
+      "faulted": false,
+      "power_kw": 2.75
+    },
+    {
+      "fan_id": "FAN_MAIN",
+      "requested_speed_fraction": 0.75,
+      "actual_speed_fraction": 0.75,
+      "actual_speed_rpm": 735,
+      "faulted": false,
+      "power_kw": 67.5
+    }
+  ],
+  "risks": [
+    {
+      "zone_id": "Z01",
+      "state": "NORMAL",
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "evaluated_seconds": 3.5,
+      "methane_fraction": 0.00002,
+      "co_ppm": 2,
+      "airflow_m3s": 39.62675005,
+      "quality": "GOOD",
+      "source_type": "SYNTHETIC_PHYSICS",
+      "transitioned": false
+    },
+    {
+      "zone_id": "Z02",
+      "state": "NORMAL",
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "evaluated_seconds": 3.5,
+      "methane_fraction": 0.00002,
+      "co_ppm": 2,
+      "airflow_m3s": 39.62675005,
+      "quality": "GOOD",
+      "source_type": "SYNTHETIC_PHYSICS",
+      "transitioned": false
+    },
+    {
+      "zone_id": "Z03",
+      "state": "NORMAL",
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "evaluated_seconds": 3.5,
+      "methane_fraction": 0.0006938648,
+      "co_ppm": 7.88692461,
+      "airflow_m3s": 14.91626122,
+      "quality": "GOOD",
+      "source_type": "SYNTHETIC_PHYSICS",
+      "transitioned": false
+    },
+    {
+      "zone_id": "Z04",
+      "state": "NORMAL",
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "evaluated_seconds": 3.5,
+      "methane_fraction": 0.0015065308,
+      "co_ppm": 11.75788308,
+      "airflow_m3s": 24.71048883,
+      "quality": "GOOD",
+      "source_type": "SYNTHETIC_PHYSICS",
+      "transitioned": false
+    },
+    {
+      "zone_id": "Z05",
+      "state": "NORMAL",
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "evaluated_seconds": 3.5,
+      "methane_fraction": 0.0012977385,
+      "co_ppm": 10.01857862,
+      "airflow_m3s": 39.62675005,
+      "quality": "GOOD",
+      "source_type": "SYNTHETIC_PHYSICS",
+      "transitioned": false
+    },
+    {
+      "zone_id": "Z06",
+      "state": "NORMAL",
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "evaluated_seconds": 3.5,
+      "methane_fraction": 0.0012999389,
+      "co_ppm": 8.12327334,
+      "airflow_m3s": 39.62675005,
+      "quality": "GOOD",
+      "source_type": "SYNTHETIC_PHYSICS",
+      "transitioned": false
+    }
+  ],
+  "safety": [
+    {
+      "zone_id": "Z01",
+      "risk_state": "NORMAL",
+      "production_stop": false,
+      "evacuation_advisory": false,
+      "ventilation_response": false,
+      "optimization_enabled": true,
+      "simulation_only": true,
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "fan_requests": []
+    },
+    {
+      "zone_id": "Z02",
+      "risk_state": "NORMAL",
+      "production_stop": false,
+      "evacuation_advisory": false,
+      "ventilation_response": false,
+      "optimization_enabled": true,
+      "simulation_only": true,
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "fan_requests": []
+    },
+    {
+      "zone_id": "Z03",
+      "risk_state": "NORMAL",
+      "production_stop": false,
+      "evacuation_advisory": false,
+      "ventilation_response": false,
+      "optimization_enabled": true,
+      "simulation_only": true,
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "fan_requests": []
+    },
+    {
+      "zone_id": "Z04",
+      "risk_state": "NORMAL",
+      "production_stop": false,
+      "evacuation_advisory": false,
+      "ventilation_response": false,
+      "optimization_enabled": true,
+      "simulation_only": true,
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "fan_requests": []
+    },
+    {
+      "zone_id": "Z05",
+      "risk_state": "NORMAL",
+      "production_stop": false,
+      "evacuation_advisory": false,
+      "ventilation_response": false,
+      "optimization_enabled": true,
+      "simulation_only": true,
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "fan_requests": []
+    },
+    {
+      "zone_id": "Z06",
+      "risk_state": "NORMAL",
+      "production_stop": false,
+      "evacuation_advisory": false,
+      "ventilation_response": false,
+      "optimization_enabled": true,
+      "simulation_only": true,
+      "reason_codes": [
+        "WITHIN_DEMO_CONSTRAINTS"
+      ],
+      "fan_requests": []
+    }
+  ]
+}

@@ -15,12 +15,9 @@ const HUD: Record<string, [number, number]> = {
 }
 const ORDER = ['Z06', 'Z05', 'Z01', 'Z03', 'Z02', 'Z04']
 
-function labelRisk(methanePercent: number, risk: string): string {
-  if (risk === 'UNKNOWN_DATA') return 'UNKNOWN DATA'
-  if (risk === 'EMERGENCY') return 'EMERGENCY'
-  if (risk === 'WARNING') return 'WARNING'
-  if (risk === 'ADVISORY' || methanePercent >= 0.3) return 'ELEVATED'
-  return 'NORMAL'
+// Labels show the risk state machine's own state; no renderer-side thresholds.
+function labelRisk(risk: string): string {
+  return risk === 'UNKNOWN_DATA' ? 'UNKNOWN DATA' : risk
 }
 
 export function V3MineScene({ model, selected, onSelect, airflow, wireframe, resetSignal, showSensors }: {
@@ -92,7 +89,7 @@ export function V3MineScene({ model, selected, onSelect, airflow, wireframe, res
     {showSensors && ORDER.map((id) => {
       const zone = model.zones.find((item) => item.id === id)
       if (!zone) return null
-      const risk = labelRisk(zone.methanePercent, zone.risk)
+      const risk = labelRisk(zone.risk)
       return <button type="button" data-v3-sector={id} key={id} onClick={() => onSelect(id)} className={`floating-label ${selected === id ? 'selected' : ''} ${zone.risk === 'EMERGENCY' ? 'danger' : ''}`}>
         <span className="floating-code">{zone.id} — {zone.role.toUpperCase()}</span>
         <strong>{zone.methanePercent.toFixed(3)}% CH₄</strong>

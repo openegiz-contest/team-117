@@ -1,42 +1,75 @@
 # MineGuard X architecture
 
-MineGuard X is an overlay on the official OpenEgiz deployment. It preserves the
-base Compose services and uses their MQTT-to-Ditto and twin-event-to-Influx path:
+MineGuard X is an overlay on the official OpenEgiz v1.0.4 Compose deployment.
+It adds two containers, `mineguard-backend` and `mineguard-ui`
+(`mineguard/deploy/compose.mineguard.yml`), and reuses the platform's MQTT,
+Eclipse Ditto, Telegraf, InfluxDB and Grafana services unchanged.
 
-```text
-Deterministic runtime
-  ├─ validated snapshot -> official MQTT -> Eclipse Ditto features
-  │                                      -> twin events -> Telegraf -> InfluxDB
-  └─ validated snapshot -> FastAPI -> WebSocket/HTTP -> React 3D command center
-Eclipse Ditto -> authenticated managed-twin GET -> FastAPI -> Twin Inspector
+```mermaid
+flowchart LR
+  subgraph backend[mineguard-backend]
+    S[Deterministic simulation<br/>airflow, CH4, CO, fans] --> C[Risk FSM, simulated safety,<br/>scenarios, VOD]
+    C --> P[Publisher: one complete<br/>Ditto modify per twin, 1 Hz]
+    R[Ditto batch readback<br/>platform_state.py] --> API[FastAPI REST + WebSocket]
+  end
+  P -->|MQTT telemetry/mineguard/...| M[Mosquitto]
+  M --> D[Eclipse Ditto<br/>9 mineguard twins]
+  D -->|twin events| T[Telegraf] --> I[InfluxDB] --> G[Grafana]
+  D -->|authenticated GET /api/2/things?ids=…| R
+  API -->|/api/v1/stream| U[React + Three.js UI :8091]
+  U -->|guarded simulation-only POST| C
 ```
 
-The runtime is the single owner of the deterministic clock, airflow, methane,
-CO, fan, risk, safety, scenario, and VOD state. It publishes a complete snapshot
-at a bounded cadence on a separate worker so platform latency cannot stop the
-physics clock. Ditto remains the platform twin store, and InfluxDB remains the
-OpenEgiz telemetry historian. The browser has no broker or Ditto credential.
+## Data flow
 
-The long-running FastAPI service exposes current state, bounded runtime history,
-scenario controls, engineering evidence, and managed Ditto readback. The
-read-only WebSocket sends one validated snapshot per second. The client uses
-HTTP polling while reconnecting and treats a silent or stale feed as unknown.
-Simulation mutations require an explicit simulation-only header and an allowed
-Origin. No route controls physical equipment.
+1. The simulation advances every 0.5 s (`app/simulation/runtime.py`): a
+   quadratic fan/airway network, then conservative well-mixed transport for
+   methane and CO, then risk and simulated safety decisions.
+2. Every two ticks (1 s), the publisher thread converts the latest snapshot into
+   a complete `modify /features` Ditto protocol message for each of the nine
+   twins (`app/integrations/telemetry.py`). It publishes them to MQTT
+   `telemetry/mineguard/<thing>`, the official OpenEgiz ingestion path.
+3. The publisher then reads all nine twins back from Ditto in one authenticated
+   request. It accepts the readback only when every twin carries the same
+   publication run ID and tick, and rebuilds the UI state contract from the
+   Ditto JSON (`app/integrations/platform_state.py`, publication status
+   `ECLIPSE_DITTO_READBACK`).
+4. `GET /api/v1/state`, `/api/v1/history` and the `/api/v1/stream` WebSocket
+   serve that Ditto-derived state. The UI therefore displays platform data, not
+   the simulator's memory. Without a configured platform (unit tests only),
+   the API serves the local model state, labelled `LOCAL_MODEL_SNAPSHOT`.
+5. Ditto republishes twin events; Telegraf stores them in InfluxDB (bucket
+   `default`, measurement `mqtt_consumer`), where the official Grafana can
+   query them.
 
-The UI scene is a consumer of validated state, not a second simulator. It maps
-the configured six-zone graph into procedural tunnels and chambers, while
-readiness and the Twin Inspector show whether publication/readback through Ditto
-is working. This distinction prevents a local runtime value from being labeled
-as platform readback evidence.
+The physics clock and the platform I/O run on separate threads. Slow Ditto
+responses show up as readiness errors (`DITTO_READBACK_STALE`,
+`DITTO_PUBLICATION_UNVERIFIED`); they never freeze the model.
 
-The Ditto schema contains one mine, six zones, and two fans. Current M10 backend
-source extends it to schema v3 with a guarded schema-v2 migration, CO ppm zone
-features, configured/actual fan RPM, and exact simulation-only safety interlock
-flags. Post-change source and live-stack gates are required before that extension
-is recorded as completed evidence.
+## Controls
 
-All configured sensors, geometry, fan nameplates, sources, and thresholds are
-fictional, uncalibrated demonstration inputs. Integration tests show software
-data flow and state consistency; they do not validate real mine physics or
-safety performance.
+Scenario commands (`start`, `pause`, `resume`, `reset`) change only the
+simulation. They require the header `X-MineGuard-Simulation: SIMULATION_ONLY`
+and an allowed Origin. The VOD controller and the decision trace are computed
+on the controller's model state. Their outputs are proposals unless the safety
+state machine is at EMERGENCY, when the model applies the simulated fan
+response. Nothing in the system has an equipment interface.
+
+## Twin schema
+
+| Thing | Features |
+|---|---|
+| `mineguard:mine-01` | `max_methane`, `max_co`, `total_airflow`, `fan_power`, `airway_e01`…`airway_e06`, `simulation` (tick, seconds, paused), `idSimulationRun` |
+| `mineguard:zone-z01`…`z06` | `methane` (% volume), `co` (ppm), `airflow` (m³/s), `risk` (state, reason codes, quality, transitioned), `safety_interlock` (trip_power, evacuation, ventilation, optimization, fan requests, `equipment_io: false`), `simulation`, `idSimulationRun` |
+| `mineguard:fan-main`, `fan-aux` | `speed`, `requested_speed` (% rated), `rpm`, `power` (kW), `state`, `simulation`, `idSimulationRun` |
+
+Twins use the platform's `default:basic_policy`. They are created idempotently
+by `bootstrap_twins.py`, which refuses to overwrite unmanaged things.
+
+## Security
+
+Generated platform credentials stay in the git-ignored `deploy/compose/.env`
+and reach only the backend container through Compose. The browser talks only to
+the same-origin nginx proxy, which carries a strict Content-Security-Policy. Both
+containers run as non-root with read-only file systems, `no-new-privileges`, all
+capabilities dropped, and memory limits.

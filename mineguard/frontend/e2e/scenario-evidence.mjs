@@ -11,7 +11,7 @@ import { URL } from 'node:url'
 const base = process.argv[2] ?? 'http://127.0.0.1:8091'
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname), 'Evidence runner is localhost only')
 const port = process.argv[3] ?? '9234'
-const output = resolve(process.argv[4] ?? '../docs/m13-evidence')
+const output = resolve(process.argv[4] ?? '../docs/final-scenario-evidence')
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
 // Dedicated evidence browser only: close previous test tabs to avoid concurrent WebGL renderers.
 assert.equal(port, '9234', 'Use the dedicated software-rendering test browser on port 9234')
@@ -82,7 +82,9 @@ try {
   for (const [index, risk] of ['ADVISORY', 'WARNING', 'EMERGENCY'].entries()) {
     await until(risk, async () => { const s = await api('/v1/state'); return s.risks.find((z) => z.zone_id === 'Z04')?.state === risk && s })
     await api('/v1/scenarios/pause', 'POST')
-    const frozen = await api('/v1/state')
+    // State is Ditto readback: wait until the paused model state has been published and read back.
+    const frozen = await until('paused readback', async () => { const s = await api('/v1/state'); return s.paused && s })
+    assert.equal(frozen.publication_status, 'ECLIPSE_DITTO_READBACK')
     assert.equal(frozen.risks.find((z) => z.zone_id === 'Z04').state, risk)
     await capture(`0${index + 2}-${risk.toLowerCase()}`, frozen)
     report.risk_stages.push({ risk, tick: frozen.tick, seconds: frozen.simulated_seconds, methane_percent: frozen.risks.find((z) => z.zone_id === 'Z04').methane_fraction * 100 })
@@ -114,14 +116,19 @@ try {
   const failed = await until('main fan failure', async () => { const s = await api('/v1/state'); return s.fans.find((f) => f.fan_id === 'FAN_MAIN')?.faulted && s })
   assert.equal(failed.fans.find((f) => f.fan_id === 'FAN_MAIN').actual_speed_rpm, 0)
   await api('/v1/scenarios/pause', 'POST')
-  await capture('07-main-fan-failure', await api('/v1/state'))
+  // The fan failure raises a new simulated incident dialog; acknowledge it so the scene is visible.
+  await until('fan-failure incident dialog', () => evaluate("!!document.querySelector('.incident-buttons')"), 30000)
+  await evaluate("document.querySelector('.incident-buttons button.secondary')?.click()")
+  await capture('07-main-fan-failure', await until('paused readback', async () => { const s = await api('/v1/state'); return s.paused && s }))
   await until('Ditto fan failure', async () => { const r = await api('/health/ready'); return r.platform_connected && r.platform_last_verified_tick >= failed.tick })
   await writeFile(resolve(output, '08-ditto-fan-failure.json'), JSON.stringify(await api('/v1/twins/mineguard%3Afan-main'), null, 2) + '\n')
   report.fan_failure_verified = true
 } finally {
   await api('/v1/scenarios/reset', 'POST')
-  report.reset = await until('reset readback', async () => { const r = await api('/health/ready'); return r.platform_connected && r.platform_last_verified_tick === 0 && r })
+  // Ditto is republished every second, so a reset shows as a verified tick restarting near zero.
+  report.reset = await until('reset readback', async () => { const r = await api('/health/ready'); return r.platform_connected && r.platform_last_verified_tick !== null && r.platform_last_verified_tick <= 10 && r })
   const reset = await api('/v1/state')
+  assert.ok(reset.tick <= 20, 'Ditto readback did not restart from the baseline')
   const resetScenario = await api('/v1/scenarios/state')
   assert.equal(resetScenario.status, 'IDLE')
   assert.equal(resetScenario.scenario_id, null)

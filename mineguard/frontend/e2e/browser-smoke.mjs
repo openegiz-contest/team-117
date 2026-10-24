@@ -97,8 +97,8 @@ try {
   await waitFor("document.querySelectorAll('.floating-label').length === 6")
   await evaluate("document.querySelectorAll('.zone-row')[0].click()")
   await waitFor("document.querySelectorAll('.zone-row')[0].classList.contains('selected')")
-  await capture('m11-command-center-3d.png')
-  const routes = [['/twins', 'Twin Inspector', 'm12-twin-inspector.png'], ['/scenarios', 'Scenario Laboratory', 'm12-scenario-laboratory.png'], ['/energy', 'Energy Intelligence', 'm12-energy-intelligence.png'], ['/evidence', 'Engineering Evidence', 'm12-engineering-evidence.png']]
+  await capture('command-center-3d.png')
+  const routes = [['/twins', 'Twin Inspector', 'twin-inspector.png'], ['/scenarios', 'Scenario Laboratory', 'scenario-laboratory.png'], ['/energy', 'Energy Intelligence', 'energy-intelligence.png'], ['/evidence', 'Engineering Evidence', 'engineering-evidence.png']]
   for (const [path, title, screenshot] of routes) {
     await command('Page.navigate', { url: `${base}${path}` })
     await waitFor(`document.querySelector('h1')?.textContent === ${JSON.stringify(title)}`)
@@ -130,12 +130,12 @@ try {
   }
   const result = { checked_at: new Date().toISOString(), base, webgl: true, zones: 6, zone_selection: true, stable_camera: true, sensor_toggle: true, rendering, direct_routes: routes.map(([path]) => path), responsive_routes: responsiveRoutes, browser_errors: browserErrors }
   assert.deepEqual(browserErrors, [], 'Browser reported an uncaught exception')
-  await writeFile(resolve(output, 'm11-browser-validation.json'), `${JSON.stringify(result, null, 2)}\n`)
+  await writeFile(resolve(output, 'browser-validation.json'), `${JSON.stringify(result, null, 2)}\n`)
   process.stdout.write(`${JSON.stringify(result)}\n`)
 } catch (error) {
-  await capture('m11-browser-failure.png')
+  await capture('browser-failure.png')
   const diagnostic = await evaluate("({title:document.title, heading:document.querySelector('h1')?.textContent, body:document.body.innerText.slice(0,2000), canvases:document.querySelectorAll('canvas').length, labels:document.querySelectorAll('.floating-label').length})")
-  await writeFile(resolve(output, 'm11-browser-failure.json'), `${JSON.stringify({ diagnostic, browserErrors }, null, 2)}\n`)
+  await writeFile(resolve(output, 'browser-failure.json'), `${JSON.stringify({ diagnostic, browserErrors }, null, 2)}\n`)
   throw error
 } finally {
   await command('Page.close')

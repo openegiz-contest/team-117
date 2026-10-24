@@ -1,6 +1,6 @@
 # Ventilation-on-demand optimization
 
-MineGuard X M4 uses an exhaustive, deterministic search over a small configured
+MineGuard X uses an exhaustive, deterministic search over a small configured
 set of fan speeds. This is a simulation-only controller. It has no equipment
 interface and cannot operate real fans.
 
@@ -8,10 +8,10 @@ For every candidate, the controller:
 
 1. enforces the configured per-decision fan-speed ramp;
 2. solves the same six-zone airflow model used by the runtime;
-3. advances the same conservative methane model from the current state for the
-   configured 60-second horizon;
-4. rejects any setting whose minimum zone airflow is below the configured demo
-   constraint or whose predicted methane reaches the configured warning level;
+3. advances the same conservative methane and CO transport from the current
+   state, with the current source terms, for the configured 60-second horizon;
+4. rejects any setting whose minimum zone airflow is below 5 m³/s, or whose
+   predicted methane or CO reaches the WARNING level (1.0 % vol, 35 ppm);
 5. minimizes predicted fan energy plus a small switching penalty.
 
 `WARNING`, `EMERGENCY`, and `UNKNOWN_DATA` states disable optimization. A fan

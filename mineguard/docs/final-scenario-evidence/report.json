@@ -1,0 +1,56 @@
+{
+  "captured_at": "2026-10-24T20:45:25.746Z",
+  "simulation_only": true,
+  "risk_stages": [
+    {
+      "risk": "ADVISORY",
+      "tick": 20,
+      "seconds": 10,
+      "methane_percent": 0.54757687
+    },
+    {
+      "risk": "WARNING",
+      "tick": 48,
+      "seconds": 24,
+      "methane_percent": 1.01973532
+    },
+    {
+      "risk": "EMERGENCY",
+      "tick": 86,
+      "seconds": 43,
+      "methane_percent": 1.52488325
+    }
+  ],
+  "browser_errors": [],
+  "rendering": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "render_profile": "v3-software-lite",
+    "canvas_pixels": [
+      574,
+      485
+    ],
+    "sample_ms": 3199.100000000002,
+    "frames": 3,
+    "approximate_raf_fps": 0.6251758307023846,
+    "draw_calls": "88",
+    "triangles": "109124",
+    "viewport": [
+      1680,
+      1120
+    ]
+  },
+  "ditto_emergency_verified": true,
+  "simulated_fan_response_verified": true,
+  "fan_failure_verified": true,
+  "reset": {
+    "status": "ready",
+    "simulation_running": true,
+    "simulation_error": "NONE",
+    "platform_configured": true,
+    "platform_connected": true,
+    "platform_error": "NONE",
+    "platform_last_verified_tick": 0,
+    "state_source": "ECLIPSE_DITTO_READBACK",
+    "source_type": "SYNTHETIC_PHYSICS"
+  }
+}

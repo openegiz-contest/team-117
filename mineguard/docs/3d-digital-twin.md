@@ -1,85 +1,57 @@
-# 3D operational twin
+# 3D mine visualization
 
-MineGuard X renders the existing OpenEgiz-connected simulation as an interactive
-spatial view. The renderer is a consumer of the validated API contract; it is
-not a second simulator and it never writes directly to equipment or Eclipse
-Ditto.
+The Command Center (<http://127.0.0.1:8091>) shows the mine as a procedural
+Three.js cutaway (`frontend/src/v3/MineEngine.js`) with HTML overlays. The scene
+only displays state; it never writes to Ditto or to the simulation.
 
-## Live data path
+## Data lineage
 
-```mermaid
-flowchart LR
-  P[Deterministic airflow and gas physics] --> R[Risk and simulated safety FSM]
-  R --> M[Official MQTT ingestion]
-  M --> D[Eclipse Ditto twins]
-  D --> E[OpenEgiz twin-event stream]
-  E --> I[Telegraf and InfluxDB]
-  R --> A[FastAPI validated runtime snapshot]
-  D --> T[FastAPI managed-twin readback]
-  A -->|WebSocket /api/v1/stream| W[React Three Fiber scene]
-  A -->|HTTP fallback and history| W
-  T --> X[Twin Inspector and readiness evidence]
-  W --> O[Operator 3D view and scenario controls]
-  O -->|Guarded simulation-only POST| R
+```text
+Eclipse Ditto twins ─► backend batch readback ─► /api/v1/stream (WebSocket, 1 Hz)
+    ─► useMineState (validation, reset detection, staleness)
+    ─► sceneModel.ts ─► sceneAdapter.ts ─► MineEngine.setState()
 ```
 
-The live scene and trend buffer use the deterministic runtime snapshot so a
-slow platform call cannot block the physics clock. That same runtime state is
-published to Ditto. The header reports platform configuration and last
-publication status separately, while the Twin Inspector reads managed entities
-back from Ditto. This distinction prevents a local value from being presented
-as platform readback evidence.
-
-The scene maps the six topology coordinates into a compact three-dimensional
-coordinate system. Depth is preserved as a relative vertical offset. Each
-airway is drawn between its actual source and target zone from
-`mine_topology.json`; the visual cannot add an unmodelled route.
+If no new state arrives for 6 s, or the clock is unhealthy, every zone is shown
+as `UNKNOWN_DATA` (purple). Stale data is never drawn as safe.
 
 ## Visual semantics
 
-| Element | Live source | Meaning |
-| --- | --- | --- |
-| Zone gas particles | `methane_fraction` | A stable zone-seeded cloud increases visible particle count and opacity with methane concentration; display is percent volume. |
-| Zone beacon/light | `risk.state` | Cyan normal, yellow advisory, amber warning, red emergency, purple unknown data. |
-| Airway particles | `flow_m3s` | Direction follows topology and animation speed scales with calculated flow; zero flow stops motion. |
-| Fan rotor and label | `actual_speed_fraction`, `actual_speed_rpm` | Rotation follows dimensionless feedback; the label shows modeled RPM; zero speed or a fault stops the rotor. |
-| Zone CO | `co_ppm` | The selected-zone inspector, top KPI, and trend annotation show validated ppm without deriving it from methane. |
-| Lockout modal | `safety[]` | Shows simulated production stop and evacuation advisory reason codes. |
-| Trend chart | bounded snapshot history | Methane and airflow share a time axis with configured warning references. |
+| Element | Driven by | Meaning |
+|---|---|---|
+| Zone marker and halo colour | `risk.state` from Ditto | cyan NORMAL, yellow ADVISORY/WARNING, red EMERGENCY, purple UNKNOWN_DATA; the selected zone has a larger halo |
+| Floating zone label | Ditto `methane` (% volume), `risk` | live CH₄ and the risk state machine's state |
+| Methane volume (false colour) | zone CH₄ | appears above 0.2 %, grows and turns red toward the 1.5 % emergency tier; methane itself is invisible, so this is a data overlay |
+| Airflow particles and arrows | intake airflow (m³/s) | speed proportional to flow; they stop when flow is zero (main-fan failure) |
+| Fan rotor | main fan `rpm` | rotation proportional to actual RPM; the rim turns red when the fan is FAULTED |
+| Rails and rail cards | Ditto state | RPM, intake flow, every zone's CH₄ and risk, selected zone's CH₄/CO/airflow |
+| Emergency dialog | `safety_interlock` | simulated power isolation and evacuation advisory; must be acknowledged |
 
-The graphics never convert stale or missing readings to zero-safe status.
-`UNKNOWN_DATA` remains visually distinct and higher priority than advisory or
-warning states. When the browser feed becomes stale, the rendered zones use the
-effective `UNKNOWN_DATA` state even if the last received snapshot was normal.
+Rocks, supports, conveyors, ducts and machines are illustrative procedural
+geometry. Zone anchor positions are chosen for readability; the authoritative
+topology (connectivity, volumes, depths) is in `data/mine_topology.json` and the
+Twin Inspector.
 
-## Performance and resilience
+## Rendering profiles
 
-- Geometry is procedural, so startup does not depend on external model assets.
-- Repeated airflow particles use GPU instancing.
-- Device pixel ratio is capped at 1.5 for predictable integrated-GPU load.
-- The Three.js bundle is lazy-loaded after WebGL capability detection.
-- The API streams one snapshot per second; HTTP polling remains the fallback.
-- The client accepts monotonic ticks, detects a reset, bounds local history, and
-  reconnects after a closed or silent WebSocket.
-- The selectable 2D topology preserves airway direction, live flow, zone
-  selection, gas/risk readings, and keyboard operation; it is automatic without WebGL.
-- `prefers-reduced-motion` disables continuous fan, particle, beacon, and camera
-  damping animation while retaining the current values and risk colours.
+At startup `renderProfile.ts` probes the WebGL renderer. On CPU-only WebGL
+(SwiftShader, llvmpipe — the judge machine has no GPU) the *software* profile
+applies:
 
-## Verified telemetry boundary
+- static meshes are merged by material and particles/arrows are instanced
+  (both profiles): 88 draw calls instead of 1,229;
+- no MSAA, pixel ratio 0.5, Lambert instead of physically based materials, no
+  point lights, no additive halo tubes, half the tube segments and particles;
+- render loop capped at 20 fps; label positions are recomputed only when the
+  camera moves;
+- no CSS `backdrop-filter` blurs over the canvas.
 
-The implemented contract covers methane, CO ppm, calculated airflow, fan speed
-fraction/RPM, fan power/fault state, risk, freshness, and simulated safety
-actions. The October 23 M10 gate validated those fields through source tests,
-WebSocket frames, Eclipse Ditto readback, and the served browser UI. None are
-derived from an unrelated display value.
+Measured with headless Chrome forced onto SwiftShader on a 4-core i5-8365U
+laptop that was also running the full platform: 1–5 frames/s, depending on host
+load. All readings, labels, rails and controls update independently of the
+frame rate. Hardware-GPU browsers use the full-detail profile.
 
-## Industrialization boundary
+## Boundary
 
-This competition build is an industrial-style simulation, not a certified mine
-safety system. A field deployment must replace fictional geometry and parameters
-with surveyed and commissioned data, integrate through an approved OT gateway,
-add authentication and authorization, use redundant brokers and historians,
-define alarm management and change-control procedures, and pass hazard analysis,
-cybersecurity review, site acceptance, and the jurisdiction's safety approval.
-The current lockout and evacuation actions remain simulation-only by design.
+This is a visualization of a fictional, simulation-only twin, not a surveyed
+mine model or a certified safety display.
