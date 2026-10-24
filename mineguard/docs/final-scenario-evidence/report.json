@@ -1,12 +1,12 @@
 {
-  "captured_at": "2026-10-24T20:45:25.746Z",
+  "captured_at": "2026-10-24T20:54:12.691Z",
   "simulation_only": true,
   "risk_stages": [
     {
       "risk": "ADVISORY",
-      "tick": 20,
-      "seconds": 10,
-      "methane_percent": 0.54757687
+      "tick": 19,
+      "seconds": 9.5,
+      "methane_percent": 0.52897179
     },
     {
       "risk": "WARNING",
@@ -16,9 +16,9 @@
     },
     {
       "risk": "EMERGENCY",
-      "tick": 86,
-      "seconds": 43,
-      "methane_percent": 1.52488325
+      "tick": 87,
+      "seconds": 43.5,
+      "methane_percent": 1.53360352
     }
   ],
   "browser_errors": [],
@@ -29,9 +29,9 @@
       574,
       485
     ],
-    "sample_ms": 3199.100000000002,
-    "frames": 3,
-    "approximate_raf_fps": 0.6251758307023846,
+    "sample_ms": 3915.7000000000007,
+    "frames": 5,
+    "approximate_raf_fps": 1.0215287177260768,
     "draw_calls": "88",
     "triangles": "109124",
     "viewport": [

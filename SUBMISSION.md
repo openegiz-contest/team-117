@@ -109,7 +109,7 @@ official OpenEgiz v1.0.4 stack from this repository:
   WebSocket stream, Ditto-sourced state, CO ppm, fan RPM and the
   simulation-only interlock.
 - **Works:** `bash mineguard/scripts/scenario-smoke.sh`. S1 reaches Z04
-  EMERGENCY (≈1.5 % CH₄ at about tick 84), the Ditto twin shows the simulated
+  EMERGENCY (≈1.5 % CH₄ at about tick 86, 43 simulated seconds), the Ditto twin shows the simulated
   trip and evacuation, and reset returns Ditto to tick 0.
 - **Works:** source gates — 198 backend tests (pytest), Ruff, strict mypy;
   37 frontend tests (Vitest), TypeScript, ESLint, production build.

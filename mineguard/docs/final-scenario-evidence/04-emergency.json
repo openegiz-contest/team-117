@@ -1,6 +1,6 @@
 {
-  "tick": 86,
-  "simulated_seconds": 43,
+  "tick": 87,
+  "simulated_seconds": 43.5,
   "paused": true,
   "source_type": "SYNTHETIC_PHYSICS",
   "publication_status": "ECLIPSE_DITTO_READBACK",
@@ -18,23 +18,23 @@
     },
     {
       "zone_id": "Z03",
-      "methane_fraction": 0.0006371055000000001,
-      "co_ppm": 6.87519776
+      "methane_fraction": 0.0006349726999999999,
+      "co_ppm": 6.85284815
     },
     {
       "zone_id": "Z04",
-      "methane_fraction": 0.0152488325,
-      "co_ppm": 9.6700815
+      "methane_fraction": 0.0153360352,
+      "co_ppm": 9.63541156
     },
     {
       "zone_id": "Z05",
-      "methane_fraction": 0.0035016754,
-      "co_ppm": 9.73584745
+      "methane_fraction": 0.0035543498000000003,
+      "co_ppm": 9.72536212
     },
     {
       "zone_id": "Z06",
-      "methane_fraction": 0.0018100206999999999,
-      "co_ppm": 9.04722184
+      "methane_fraction": 0.0018304652,
+      "co_ppm": 9.05554422
     }
   ],
   "airways": [
@@ -88,7 +88,7 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 43,
+      "evaluated_seconds": 43.5,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 53.17618382,
@@ -102,7 +102,7 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 43,
+      "evaluated_seconds": 43.5,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 53.17618382,
@@ -116,9 +116,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 43,
-      "methane_fraction": 0.0006371055000000001,
-      "co_ppm": 6.87519776,
+      "evaluated_seconds": 43.5,
+      "methane_fraction": 0.0006349726999999999,
+      "co_ppm": 6.85284815,
       "airflow_m3s": 21.25843128,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -130,9 +130,9 @@
       "reason_codes": [
         "METHANE_EMERGENCY"
       ],
-      "evaluated_seconds": 43,
-      "methane_fraction": 0.0152488325,
-      "co_ppm": 9.6700815,
+      "evaluated_seconds": 43.5,
+      "methane_fraction": 0.0153360352,
+      "co_ppm": 9.63541156,
       "airflow_m3s": 31.91775254,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -144,9 +144,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 43,
-      "methane_fraction": 0.0035016754,
-      "co_ppm": 9.73584745,
+      "evaluated_seconds": 43.5,
+      "methane_fraction": 0.0035543498000000003,
+      "co_ppm": 9.72536212,
       "airflow_m3s": 53.17618382,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -158,9 +158,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 43,
-      "methane_fraction": 0.0018100206999999999,
-      "co_ppm": 9.04722184,
+      "evaluated_seconds": 43.5,
+      "methane_fraction": 0.0018304652,
+      "co_ppm": 9.05554422,
       "airflow_m3s": 53.17618382,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -221,14 +221,14 @@
       "fan_requests": [
         {
           "fan_id": "FAN_AUX",
-          "command_id": "sim-86-Z04-FAN_AUX",
+          "command_id": "sim-87-Z04-FAN_AUX",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 1,
           "status": "ACHIEVED"
         },
         {
           "fan_id": "FAN_MAIN",
-          "command_id": "sim-86-Z04-FAN_MAIN",
+          "command_id": "sim-87-Z04-FAN_MAIN",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 1,
           "status": "ACHIEVED"

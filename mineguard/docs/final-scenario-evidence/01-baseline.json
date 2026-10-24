@@ -1,6 +1,6 @@
 {
-  "tick": 7,
-  "simulated_seconds": 3.5,
+  "tick": 4,
+  "simulated_seconds": 2,
   "paused": false,
   "source_type": "SYNTHETIC_PHYSICS",
   "publication_status": "ECLIPSE_DITTO_READBACK",
@@ -18,23 +18,23 @@
     },
     {
       "zone_id": "Z03",
-      "methane_fraction": 0.0006938648,
-      "co_ppm": 7.88692461
+      "methane_fraction": 0.0006964613999999999,
+      "co_ppm": 7.93478189
     },
     {
       "zone_id": "Z04",
-      "methane_fraction": 0.0015065308,
-      "co_ppm": 11.75788308
+      "methane_fraction": 0.0015037704,
+      "co_ppm": 11.86021979
     },
     {
       "zone_id": "Z05",
-      "methane_fraction": 0.0012977385,
-      "co_ppm": 10.01857862
+      "methane_fraction": 0.0012986849000000001,
+      "co_ppm": 10.01182214
     },
     {
       "zone_id": "Z06",
-      "methane_fraction": 0.0012999389,
-      "co_ppm": 8.12327334
+      "methane_fraction": 0.0012999822,
+      "co_ppm": 8.07124906
     }
   ],
   "airways": [
@@ -88,7 +88,7 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 3.5,
+      "evaluated_seconds": 2,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 39.62675005,
@@ -102,7 +102,7 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 3.5,
+      "evaluated_seconds": 2,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 39.62675005,
@@ -116,9 +116,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 3.5,
-      "methane_fraction": 0.0006938648,
-      "co_ppm": 7.88692461,
+      "evaluated_seconds": 2,
+      "methane_fraction": 0.0006964613999999999,
+      "co_ppm": 7.93478189,
       "airflow_m3s": 14.91626122,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -130,9 +130,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 3.5,
-      "methane_fraction": 0.0015065308,
-      "co_ppm": 11.75788308,
+      "evaluated_seconds": 2,
+      "methane_fraction": 0.0015037704,
+      "co_ppm": 11.86021979,
       "airflow_m3s": 24.71048883,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -144,9 +144,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 3.5,
-      "methane_fraction": 0.0012977385,
-      "co_ppm": 10.01857862,
+      "evaluated_seconds": 2,
+      "methane_fraction": 0.0012986849000000001,
+      "co_ppm": 10.01182214,
       "airflow_m3s": 39.62675005,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -158,9 +158,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 3.5,
-      "methane_fraction": 0.0012999389,
-      "co_ppm": 8.12327334,
+      "evaluated_seconds": 2,
+      "methane_fraction": 0.0012999822,
+      "co_ppm": 8.07124906,
       "airflow_m3s": 39.62675005,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",

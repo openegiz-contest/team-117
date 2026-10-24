@@ -6,7 +6,7 @@
     "platform_configured": true,
     "platform_connected": true,
     "platform_error": "NONE",
-    "platform_last_verified_tick": 86,
+    "platform_last_verified_tick": 87,
     "state_source": "ECLIPSE_DITTO_READBACK",
     "source_type": "SYNTHETIC_PHYSICS"
   },
@@ -28,12 +28,12 @@
     "features": {
       "idSimulationRun": {
         "properties": {
-          "value": "live-20261024T204411791654Z-124"
+          "value": "live-20261024T205249914784Z-130"
         }
       },
       "methane": {
         "properties": {
-          "value": 1.52488325,
+          "value": 1.53360352,
           "unit": "% volume",
           "quality": "GOOD",
           "source_type": "SYNTHETIC_PHYSICS"
@@ -41,7 +41,7 @@
       },
       "co": {
         "properties": {
-          "value": 9.6700815,
+          "value": 9.63541156,
           "unit": "ppm",
           "quality": "GOOD",
           "source_type": "SYNTHETIC_PHYSICS"
@@ -58,8 +58,8 @@
       "simulation": {
         "properties": {
           "value": true,
-          "tick": 86,
-          "simulated_seconds": 43
+          "tick": 87,
+          "simulated_seconds": 43.5
         }
       },
       "risk": {
@@ -88,14 +88,14 @@
           "fan_requests": [
             {
               "fan_id": "FAN_AUX",
-              "command_id": "sim-86-Z04-FAN_AUX",
+              "command_id": "sim-87-Z04-FAN_AUX",
               "requested_speed_fraction": 1,
               "actual_speed_fraction": 1,
               "status": "ACHIEVED"
             },
             {
               "fan_id": "FAN_MAIN",
-              "command_id": "sim-86-Z04-FAN_MAIN",
+              "command_id": "sim-87-Z04-FAN_MAIN",
               "requested_speed_fraction": 1,
               "actual_speed_fraction": 1,
               "status": "ACHIEVED"
@@ -121,14 +121,14 @@
     "fan_requests": [
       {
         "fan_id": "FAN_AUX",
-        "command_id": "sim-86-Z04-FAN_AUX",
+        "command_id": "sim-87-Z04-FAN_AUX",
         "requested_speed_fraction": 1,
         "actual_speed_fraction": 1,
         "status": "ACHIEVED"
       },
       {
         "fan_id": "FAN_MAIN",
-        "command_id": "sim-86-Z04-FAN_MAIN",
+        "command_id": "sim-87-Z04-FAN_MAIN",
         "requested_speed_fraction": 1,
         "actual_speed_fraction": 1,
         "status": "ACHIEVED"

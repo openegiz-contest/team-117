@@ -2,14 +2,14 @@
   "model_feedback": [
     {
       "fan_id": "FAN_AUX",
-      "command_id": "sim-86-Z04-FAN_AUX",
+      "command_id": "sim-87-Z04-FAN_AUX",
       "requested_speed_fraction": 1,
       "actual_speed_fraction": 1,
       "status": "ACHIEVED"
     },
     {
       "fan_id": "FAN_MAIN",
-      "command_id": "sim-86-Z04-FAN_MAIN",
+      "command_id": "sim-87-Z04-FAN_MAIN",
       "requested_speed_fraction": 1,
       "actual_speed_fraction": 1,
       "status": "ACHIEVED"
@@ -38,7 +38,7 @@
       "features": {
         "idSimulationRun": {
           "properties": {
-            "value": "live-20261024T204411791654Z-124"
+            "value": "live-20261024T205249914784Z-130"
           }
         },
         "speed": {
@@ -81,8 +81,8 @@
         "simulation": {
           "properties": {
             "value": true,
-            "tick": 86,
-            "simulated_seconds": 43
+            "tick": 87,
+            "simulated_seconds": 43.5
           }
         }
       }
@@ -109,7 +109,7 @@
       "features": {
         "idSimulationRun": {
           "properties": {
-            "value": "live-20261024T204411791654Z-124"
+            "value": "live-20261024T205249914784Z-130"
           }
         },
         "speed": {
@@ -152,8 +152,8 @@
         "simulation": {
           "properties": {
             "value": true,
-            "tick": 86,
-            "simulated_seconds": 43
+            "tick": 87,
+            "simulated_seconds": 43.5
           }
         }
       }

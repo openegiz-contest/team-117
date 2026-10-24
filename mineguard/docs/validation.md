@@ -54,10 +54,10 @@ horizontal overflow, no browser exception.
 
 | Stage | Tick | Simulated s | Z04 CH₄ (% vol) |
 |---|---:|---:|---:|
-| Baseline | 7 | 3.5 | 0.15 |
-| ADVISORY | 20 | 10.0 | 0.548 |
+| Baseline | 4 | 2.0 | 0.150 |
+| ADVISORY | 19 | 9.5 | 0.529 |
 | WARNING | 48 | 24.0 | 1.020 |
-| EMERGENCY | 86 | 43.0 | 1.525 |
+| EMERGENCY | 87 | 43.5 | 1.534 |
 
 At EMERGENCY, both fans were read back from Ditto at 100 % speed (model
 feedback `ACHIEVED`), and the Z04 interlock was tripped. S2 then read back the

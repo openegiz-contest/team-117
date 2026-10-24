@@ -16,12 +16,12 @@
   "features": {
     "idSimulationRun": {
       "properties": {
-        "value": "live-20261024T204411791654Z-147"
+        "value": "live-20261024T205249914784Z-159"
       }
     },
     "methane": {
       "properties": {
-        "value": 0.15065308,
+        "value": 0.15118833,
         "unit": "% volume",
         "quality": "GOOD",
         "source_type": "SYNTHETIC_PHYSICS"
@@ -29,7 +29,7 @@
     },
     "co": {
       "properties": {
-        "value": 11.75788308,
+        "value": 11.55944554,
         "unit": "ppm",
         "quality": "GOOD",
         "source_type": "SYNTHETIC_PHYSICS"
@@ -46,8 +46,8 @@
     "simulation": {
       "properties": {
         "value": true,
-        "tick": 7,
-        "simulated_seconds": 3.5
+        "tick": 13,
+        "simulated_seconds": 6.5
       }
     },
     "risk": {
