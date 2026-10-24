@@ -47,7 +47,7 @@ applies:
 - no CSS `backdrop-filter` blurs over the canvas.
 
 Measured with headless Chrome forced onto SwiftShader on a 4-core i5-8365U
-laptop that was also running the full platform: 1–5 frames/s, depending on host
+laptop that was also running the full platform: 0.6–4.5 frames/s, depending on host
 load. All readings, labels, rails and controls update independently of the
 frame rate. Hardware-GPU browsers use the full-detail profile.
 

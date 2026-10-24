@@ -31,6 +31,26 @@ the API command guard, and the WebSocket/readiness behaviour.
 | `bash mineguard/scripts/full-smoke.sh` | official `make smoke` (MQTT → Ditto → Telegraf → InfluxDB → Grafana); WebSocket frames are `ECLIPSE_DITTO_READBACK` with an advancing tick; CO ppm, fan RPM and the simulation-only interlock read back from Ditto | pass |
 | `bash mineguard/scripts/scenario-smoke.sh` | S1 drives Z04 to EMERGENCY (1.52 % CH₄, tick 86); the Ditto twin shows `trip_power`, evacuation and ventilation response with `equipment_io: false`; reset returns the Ditto readback to tick 0 with interlocks cleared | pass |
 
+## Clean-clone rehearsal
+
+Fresh `git clone` of `openegiz-contest/team-117` at commit `8ccd6a3`, run with
+an isolated Compose project (new data volumes, newly generated credentials, no
+`deploy/compose/.env`) and with the MineGuard images deleted beforehand, so they
+were rebuilt from source. The README commands were run literally:
+
+| Step | Result |
+|---|---|
+| `bash mineguard/scripts/bootstrap.sh` | exit 0 in 113 s; Ditto synchronization connected |
+| `bash mineguard/scripts/full-smoke.sh` | pass (official smoke + MineGuard checks) |
+| `bash mineguard/scripts/scenario-smoke.sh` | pass: Z04 EMERGENCY at tick 84 (1.51 % CH₄), Ditto interlock verified, reset to tick 0 |
+| second `bootstrap.sh` on the running stack | exit 0 in 72 s |
+| browser gate (`browser-smoke.mjs`) | all five routes, desktop and mobile, no browser errors |
+
+Limitation: the official platform images and Python/Node base images were
+already in the local Docker cache, so this rehearsal does not measure first-time
+download time. The judge environment downloads them (about 2.3 GB for the
+platform, per the OpenEgiz documentation).
+
 ## Runtime validation (`GET /api/v1/evidence` → `validation`)
 
 Checks executed by the running service, shown on the Evidence page:

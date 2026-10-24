@@ -103,7 +103,10 @@ official OpenEgiz v1.0.4 stack from this repository:
 
 - **Works:** `bash mineguard/scripts/bootstrap.sh` (official `make up`, the
   MineGuard overlay, wait for verified Ditto readback); rerunning it on a
-  running stack.
+  running stack. A clean-clone rehearsal from GitHub (fresh volumes and
+  credentials, MineGuard images rebuilt) started in 113 s and passed every gate
+  below (`mineguard/docs/validation.md`). Base images were already cached
+  locally, so first-download time was not measured.
 - **Works:** `bash mineguard/scripts/full-smoke.sh`. It runs the official
   `make smoke` (MQTT → Ditto → Telegraf → InfluxDB → Grafana), then checks the
   WebSocket stream, Ditto-sourced state, CO ppm, fan RPM and the
@@ -112,7 +115,7 @@ official OpenEgiz v1.0.4 stack from this repository:
   EMERGENCY (≈1.5 % CH₄ at about tick 86, 43 simulated seconds), the Ditto twin shows the simulated
   trip and evacuation, and reset returns Ditto to tick 0.
 - **Works:** source gates — 198 backend tests (pytest), Ruff, strict mypy;
-  37 frontend tests (Vitest), TypeScript, ESLint, production build.
+  31 frontend tests (Vitest), TypeScript, ESLint, production build.
 - **Works:** live runtime validation on the Evidence page. All five checks
   pass; for example, the Ditto readback matches the model within 4e-11 in
   CH₄ fraction, and the maximum gas-balance residual is about 2e-15 m³.
