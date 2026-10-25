@@ -1,96 +1,271 @@
-<!doctype html><html><head><meta charset="utf-8"><title>MineGuard X</title><style>
-@page{size:13.333in 7.5in;margin:0}*{box-sizing:border-box}body{margin:0;background:#071117;color:#e2edf0;font-family:Arial,Helvetica,sans-serif}
-.slide{width:13.333in;height:7.5in;padding:.55in .7in;page-break-after:always;position:relative;overflow:hidden;background:radial-gradient(circle at 85% 5%,#153744 0,transparent 35%),#071117}
-.slide:last-child{page-break-after:auto}h1{font-size:54px;margin:.1in 0 .15in;letter-spacing:-1px}h2{font-size:30px;margin:0 0 .22in;color:#fff}h3{color:#29d3c2;font-size:17px;margin:0 0 .06in}
-p,li{font-size:16px;line-height:1.45;color:#a9bdc4;margin:.05in 0}.eyebrow{font:12px monospace;letter-spacing:3px;color:#29d3c2;text-transform:uppercase;margin:0 0 .08in}
-.tag{display:inline-block;border:1px solid #f5aa42;color:#f5aa42;padding:6px 10px;font:12px monospace;margin-right:.1in}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:.2in}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.18in}.card{border:1px solid #29414b;background:#0c1a20;padding:.18in}
-.split{display:grid;grid-template-columns:4.1in 1fr;gap:.3in;align-items:start}.shot{width:100%;border:1px solid #29414b;display:block}
-.flow{display:flex;align-items:center;justify-content:space-between;margin:.25in 0}.node{border:1px solid #2f6370;padding:.14in;text-align:center;width:1.55in;background:#0d2028;font-size:15px}.node b{color:#fff}.arrow{color:#29d3c2;font-size:24px}
-.metric{font:34px monospace;color:#29d3c2}.small{font-size:12.5px;color:#78909a}.warn{color:#f5aa42}.ok{color:#2fe0a2}
-.footer{position:absolute;left:.7in;right:.7in;bottom:.22in;border-top:1px solid #20353e;padding-top:.08in;font:10px monospace;color:#637b84;display:flex;justify-content:space-between}
-.equation{font:17px monospace;color:#29d3c2;background:#09151a;padding:.14in .18in;border-left:3px solid #29d3c2;margin:.08in 0}
-table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-bottom:1px solid #20353e;padding:6px 8px;text-align:left;color:#c4d4d9}th{color:#29d3c2;font:11px monospace;letter-spacing:1px;text-transform:uppercase}
-code{color:#29d3c2;font-family:monospace}.big{font-size:64px}.shots2{display:grid;grid-template-columns:1fr 1fr;gap:.15in}.cap{font:11px monospace;color:#78909a;margin:.04in 0 0}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>MineGuard X</title><style>
+@page{size:13.333in 7.5in;margin:0}
+:root{--bg:#060f15;--panel:#0b1a21;--line:#1f3640;--text:#e8f1f3;--muted:#93a9b0;--dim:#5f7880;--teal:#2ad4c3;--amber:#f5aa42;--red:#ff5d6c;--purple:#b794f6;--green:#3ee0a0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,"DejaVu Sans",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.slide{width:13.333in;height:7.5in;padding:.5in .62in .7in;page-break-after:always;position:relative;overflow:hidden;background:radial-gradient(ellipse at 100% 0%,#12323d 0,transparent 45%),radial-gradient(ellipse at 0% 100%,#0b2028 0,transparent 40%),var(--bg)}
+.slide:last-child{page-break-after:auto}
+.eyebrow{font:600 11.5px "DejaVu Sans Mono",monospace;letter-spacing:3px;color:var(--teal);text-transform:uppercase;margin:0 0 8px}
+h1{font-size:60px;line-height:1;margin:0;letter-spacing:-1.5px}h2{font-size:31px;line-height:1.15;margin:0 0 22px;color:#fff;letter-spacing:-.4px;max-width:11.2in}
+h3{font-size:15px;margin:0 0 6px;color:var(--teal);letter-spacing:.3px}
+p{font-size:15.5px;line-height:1.5;color:var(--muted);margin:6px 0}b,strong{color:#fff}
+.mono{font-family:"DejaVu Sans Mono",monospace}code{font-family:"DejaVu Sans Mono",monospace;color:var(--teal);font-size:.92em}
+.footer{position:absolute;left:.62in;right:.62in;bottom:.26in;border-top:1px solid var(--line);padding-top:8px;font:10px "DejaVu Sans Mono",monospace;color:var(--dim);display:flex;justify-content:space-between;gap:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.shot{width:100%;display:block;border:1px solid #24414c;border-radius:8px;box-shadow:0 10px 40px #0009}
+.cap{font:11px "DejaVu Sans Mono",monospace;color:var(--dim);margin:6px 0 0}
+.pill{display:inline-block;font:700 11px "DejaVu Sans Mono",monospace;padding:4px 9px;border-radius:999px;border:1px solid currentColor;letter-spacing:.5px}
+.tag{display:inline-block;border:1px solid var(--amber);color:var(--amber);padding:6px 11px;border-radius:6px;font:11px "DejaVu Sans Mono",monospace;margin-right:8px}
+.row{display:flex;gap:22px}.col{flex:1;min-width:0}
+.amber{color:var(--amber)}.red{color:var(--red)}.teal{color:var(--teal)}.purple{color:var(--purple)}.green{color:var(--green)}
+.facts{display:grid;gap:10px}.fact{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:8px;padding:10px 14px}
+.fact .k{font:700 20px "DejaVu Sans Mono",monospace;min-width:1.25in;color:#fff}.fact p{margin:0;font-size:14px}
+.undo{margin-top:12px;border:1px dashed #2f5866;border-radius:8px;padding:10px 14px;font-size:14px;color:var(--muted)}.undo b{color:var(--teal)}
+svg text{font-family:Arial,Helvetica,"DejaVu Sans",sans-serif}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;color:#c9d7db;vertical-align:top}th{color:var(--teal);font:600 11px "DejaVu Sans Mono",monospace;letter-spacing:1px;text-transform:uppercase}
+.callout{position:absolute;width:28px;height:28px;border-radius:50%;background:var(--amber);color:#111;font:700 15px Arial;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px #f5aa4255,0 4px 12px #000a;transform:translate(-50%,-50%)}
+.legend{display:grid;gap:11px}.legend div{display:flex;gap:12px;align-items:flex-start}.legend .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--amber);color:#111;font:700 14px Arial;display:flex;align-items:center;justify-content:center}.legend p{margin:0;font-size:14px}.legend b{display:block;font-size:15px;margin-bottom:2px}
+.big{font:700 44px "DejaVu Sans Mono",monospace;color:var(--teal);line-height:1}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:repeat(5,auto);gap:12px 30px}
+.steps li{counter-increment:s;position:relative;min-height:62px;padding:11px 14px 11px 54px;background:var(--panel);border:1px solid var(--line);border-radius:8px;font-size:14.5px;line-height:1.4;color:#c9d7db}
+.steps li:before{content:counter(s);position:absolute;left:12px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;border:2px solid var(--teal);color:var(--teal);font:700 14px "DejaVu Sans Mono",monospace;display:flex;align-items:center;justify-content:center}
+.chain{display:flex;align-items:stretch;gap:8px;margin:6px 0}.chain div{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13px;color:#c9d7db;text-align:center}.chain i{align-self:center;color:var(--teal);font-style:normal;font-size:20px}
 </style></head><body>
 
-<section class="slide"><p class="eyebrow">DeepCore Labs · Digital Mine on OpenEgiz 2026</p><h1 class="big">MineGuard X</h1><h2>A physics-informed digital twin of an underground coal-mine ventilation section</h2>
-<p style="max-width:7.4in">Six connected ventilation zones and two fans live as Eclipse Ditto twins. A deterministic airflow and gas model publishes through OpenEgiz MQTT, and every value in the interface is read back from Ditto. Operators, ventilation engineers and reliability engineers use it to decide how to ventilate safely and efficiently.</p>
-<p style="margin-top:.25in"><span class="tag">SIMULATION ONLY</span><span class="tag">FICTIONAL, DOCUMENTED PARAMETERS</span><span class="tag">OPENEGIZ v1.0.4 + ECLIPSE DITTO</span></p>
-<img class="shot" src="final-browser/command-center-3d.png" style="position:absolute;right:.7in;bottom:.55in;width:5.1in;opacity:.95">
-<div class="footer"><span>MineGuard X · team-117</span><span>1 / 12</span></div></section>
+<!-- 1 · Hook -->
+<section class="slide" style="padding-top:.55in">
+<p class="eyebrow">DeepCore Labs · Digital Mine on OpenEgiz 2026 · team-117</p>
+<div class="row" style="gap:34px;margin-top:14px">
+<div style="flex:0 0 5.35in">
+<p style="font-size:44px;line-height:1.08;color:#fff;margin:6px 0 18px;letter-spacing:-1px">Methane is <span class="amber">invisible</span>.<br>Its consequences are not.</p>
+<div style="display:flex;gap:18px;align-items:center;margin:8px 0 14px"><div style="font:700 92px Arial;color:var(--amber);line-height:.9;letter-spacing:-3px">46</div>
+<p style="margin:0;font-size:16px;color:#c9d7db">miners died on <b>28 October 2023</b> when a fire, presumably caused by a methane explosion, broke out in the <b>Kostenko coal mine</b>, Karaganda region, Kazakhstan.</p></div>
+<p>In a gassy mine, ventilation keeps methane diluted — and every fan change moves air in every connected roadway.</p>
+<div style="margin-top:26px;border-top:1px solid var(--line);padding-top:20px"><h1>MineGuard X</h1>
+<p style="font-size:17px;color:#c9d7db;margin-top:10px">A physics-informed digital twin of an underground coal-mine ventilation section, built on OpenEgiz and Eclipse Ditto.</p>
+<p style="margin-top:14px"><span class="tag">SIMULATION ONLY</span><span class="tag">FICTIONAL MINE · DOCUMENTED PARAMETERS</span></p></div>
+</div>
+<div class="col" style="padding-top:8px"><img class="shot" src="final-browser/command-center-3d.png">
+<div class="row" style="gap:10px;margin-top:14px">
+<div class="card" style="flex:1;padding:10px 12px"><div class="big" style="font-size:30px">16</div><p style="margin:2px 0 0;font-size:12.5px">Ditto twins</p></div>
+<div class="card" style="flex:1;padding:10px 12px"><div class="big" style="font-size:30px">4</div><p style="margin:2px 0 0;font-size:12.5px">what-if scenarios</p></div>
+<div class="card" style="flex:1;padding:10px 12px"><div class="big" style="font-size:30px">3</div><p style="margin:2px 0 0;font-size:12.5px">users, 3 decisions</p></div>
+<div class="card" style="flex:1;padding:10px 12px"><div class="big" style="font-size:30px">252</div><p style="margin:2px 0 0;font-size:12.5px">automated tests</p></div></div>
+</div></div>
+<div class="footer"><span>Accident figures: “Kostenko mine disaster”, Wikipedia (final toll 46; early reports on 28–29 Oct 2023 gave lower counts while recovery continued)</span><span>1 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Concept</p><h2>Ventilation, methane, fan reliability and energy are one problem</h2>
-<div class="grid"><div class="card"><h3>Enterprise</h3><p>A gassy coal-mine section: intake shaft, main intake gallery, development heading, production face, return gallery, return shaft; exhausting main fan and auxiliary heading fan.</p></div>
-<div class="card"><h3>Users</h3><p>Control-room operator (what is happening, where) · ventilation engineer (which fan setting is safe, at what energy) · reliability engineer (what a fan failure does; did the requested response happen).</p></div>
-<div class="card"><h3>Decision</h3><p>When rising CH₄/CO requires stronger ventilation, a production stop or evacuation; which fan speeds satisfy every constraint, and which uses least energy; whether the response was achieved.</p></div>
-<div class="card"><h3>Why</h3><p>Changing one fan changes airflow, and therefore methane dilution, in every connected zone. Methane accidents such as Kostenko (Karaganda, 2023) show the stakes. Main fans are large electrical loads, but safety must always outrank energy.</p></div></div>
-<div class="footer"><span>Concept written by the team before implementation</span><span>2 / 12</span></div></section>
+<!-- 2 · Users -->
+<section class="slide"><p class="eyebrow">Concept</p><h2>Three users, three questions — one coupled system</h2>
+<div class="row" style="gap:18px">
+<div class="card col" style="border-top:3px solid var(--teal)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2ad4c3" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+<h3 style="margin-top:8px">Control-room operator</h3><p style="font-size:20px;line-height:1.3;color:#fff;margin:10px 0">“What is happening now, and where?”</p><p>Live CH₄, CO and airflow per zone, the risk state with its reasons, and whether the simulated production stop or evacuation advisory is active.</p></div>
+<div class="card col" style="border-top:3px solid var(--amber)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f5aa42" stroke-width="1.8"><circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 4-7 2 0 2 3 0 5M14 12c4 0 7 1 7 4 0 2-3 2-5 0M12 14c0 4-1 7-4 7-2 0-2-3 0-5M10 12c-4 0-7-1-7-4 0-2 3-2 5 0"/></svg>
+<h3 style="margin-top:8px;color:var(--amber)">Ventilation engineer</h3><p style="font-size:20px;line-height:1.3;color:#fff;margin:10px 0">“Which fan setting is safe, and how much energy does it use?”</p><p>Every candidate fan setting is forecast 60 s ahead; unsafe ones are rejected and the lowest-energy safe one is proposed.</p></div>
+<div class="card col" style="border-top:3px solid var(--red)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ff5d6c" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>
+<h3 style="margin-top:8px;color:var(--red)">Reliability engineer</h3><p style="font-size:20px;line-height:1.3;color:#fff;margin:10px 0">“What happens when something fails — and did the response actually happen?”</p><p>Fan failure, roof fall and sensor loss scenarios, and requested → actual feedback for every fan command.</p></div>
+</div>
+<div class="chain" style="margin-top:22px"><div><b>Fan speed</b><br>changes</div><i>→</i><div><b>Airflow</b><br>in every connected roadway</div><i>→</i><div><b>Methane dilution</b><br>in every zone</div><i>→</i><div><b>Risk state</b><br>and simulated safety actions</div><i>→</i><div><b>Energy</b><br>fan power ∝ speed³</div></div>
+<p style="margin-top:12px">Gas risk, fan reliability and electricity use cannot be answered sensor by sensor — a connected twin can. Main fans are large electrical loads, but <b>safety always outranks energy</b>.</p>
+<div class="footer"><span>Concept written by the team before implementation · SUBMISSION.md</span><span>2 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Mine model</p><h2>Six zones, six directed airways, two fans — nine Ditto twins</h2>
-<p class="equation">Z01 Intake → Z02 Distribution → { Z03 Heading (aux fan) ∥ Z04 Production face } → Z05 Return → Z06 Return shaft (main fan)</p>
-<table><tr><th>Thing</th><th>Features published every second</th></tr>
-<tr><td><code>mineguard:mine-01</code></td><td>max CH₄, max CO, total airflow, fan power, per-airway flow E01–E06, tick, paused</td></tr>
-<tr><td><code>mineguard:zone-z01…z06</code></td><td>methane (% vol), co (ppm), airflow (m³/s), risk (state, reasons, quality), safety_interlock (trip, evacuation, fan requests, equipment_io=false)</td></tr>
-<tr><td><code>mineguard:fan-main / fan-aux</code></td><td>speed and requested speed (% rated), rpm, power (kW), state RUNNING/FAULTED</td></tr></table>
-<p class="small" style="margin-top:.15in">Topology is validated at startup (connected, acyclic, flow-balanced): <code>mineguard/data/mine_topology.json</code>. Twins share <code>_parents: mineguard:mine-01</code> and the platform policy <code>default:basic_policy</code>.</p>
-<div class="footer"><span>Defined in data/ and backend/app/integrations/bootstrap_twins.py</span><span>3 / 12</span></div></section>
+<!-- 3 · The mine -->
+<section class="slide"><p class="eyebrow">The mine</p><h2>One gassy coal-mine section, modeled as 16 Eclipse Ditto twins</h2>
+<div class="row" style="gap:26px">
+<div style="flex:0 0 7.3in">
+<svg viewBox="0 0 800 400" width="100%">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="3.4" markerHeight="3.4" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#2ad4c3"/></marker></defs>
+<rect x="0" y="0" width="800" height="400" rx="12" fill="#0b1a21" stroke="#1f3640"/>
+<g stroke="#2ad4c3" stroke-width="5" marker-end="url(#ar)" opacity=".9">
+<line x1="118" y1="190" x2="196" y2="190"/><line x1="258" y1="174" x2="356" y2="108"/><line x1="258" y1="206" x2="356" y2="272"/>
+<line x1="444" y1="108" x2="542" y2="174"/><line x1="444" y1="272" x2="542" y2="206"/><line x1="604" y1="190" x2="682" y2="190"/></g>
+<g font-size="15" font-weight="700" fill="#e8f1f3" text-anchor="middle">
+<text x="157" y="170">E01</text><text x="290" y="128">E02</text><text x="290" y="262">E03</text><text x="510" y="128">E04</text><text x="510" y="262">E05</text><text x="643" y="170">E06</text></g>
+<g text-anchor="middle">
+<circle cx="88" cy="190" r="30" fill="#0e2a33" stroke="#2ad4c3" stroke-width="3"/><text x="88" y="196" font-size="17" font-weight="700" fill="#fff">Z01</text><text x="88" y="244" font-size="12.5" fill="#93a9b0">Intake shaft</text>
+<circle cx="228" cy="190" r="30" fill="#0e2a33" stroke="#2ad4c3" stroke-width="3"/><text x="228" y="196" font-size="17" font-weight="700" fill="#fff">Z02</text><text x="228" y="244" font-size="12.5" fill="#93a9b0">Main intake gallery</text>
+<circle cx="400" cy="92" r="30" fill="#0e2a33" stroke="#2ad4c3" stroke-width="3"/><text x="400" y="98" font-size="17" font-weight="700" fill="#fff">Z03</text><text x="400" y="50" font-size="12.5" fill="#93a9b0">Development heading</text>
+<circle cx="400" cy="288" r="30" fill="#0e2a33" stroke="#f5aa42" stroke-width="3"/><text x="400" y="294" font-size="17" font-weight="700" fill="#fff">Z04</text><text x="400" y="240" font-size="12.5" fill="#f5aa42">Production face</text>
+<circle cx="572" cy="190" r="30" fill="#0e2a33" stroke="#2ad4c3" stroke-width="3"/><text x="572" y="196" font-size="17" font-weight="700" fill="#fff">Z05</text><text x="572" y="244" font-size="12.5" fill="#93a9b0">Return gallery</text>
+<circle cx="712" cy="190" r="30" fill="#0e2a33" stroke="#2ad4c3" stroke-width="3"/><text x="712" y="196" font-size="17" font-weight="700" fill="#fff">Z06</text><text x="712" y="244" font-size="12.5" fill="#93a9b0">Return shaft</text></g>
+<g font-size="13" font-weight="700"><rect x="486" y="70" width="118" height="30" rx="15" fill="#10262e" stroke="#2ad4c3"/><text x="545" y="90" text-anchor="middle" fill="#2ad4c3">AUX fan · 22 kW</text><line x1="486" y1="85" x2="432" y2="88" stroke="#2ad4c3" stroke-dasharray="3 3"/>
+<rect x="648" y="108" width="128" height="30" rx="15" fill="#10262e" stroke="#2ad4c3"/><text x="712" y="128" text-anchor="middle" fill="#2ad4c3">MAIN fan · 160 kW</text><line x1="712" y1="138" x2="712" y2="158" stroke="#2ad4c3" stroke-dasharray="3 3"/>
+<rect x="452" y="324" width="190" height="30" rx="15" fill="#2a2110" stroke="#f5aa42"/><text x="547" y="344" text-anchor="middle" fill="#f5aa42">Cutting machine · 600 kW</text><line x1="452" y1="339" x2="428" y2="306" stroke="#f5aa42" stroke-dasharray="3 3"/></g>
+<text x="20" y="388" font-size="12" fill="#5f7880">fresh air enters at Z01 → splits at Z02 → rejoins at Z05 → exhausted by the main fan at Z06</text>
+</svg></div>
+<div class="col">
+<table><tr><th>Twin type</th><th>Count</th><th>Live state</th></tr>
+<tr><td><code>mine-01</code></td><td>1</td><td>max CH₄, max CO, total airflow, fan power, tick</td></tr>
+<tr><td><code>zone-z01…z06</code></td><td>6</td><td>CH₄ (% vol), CO (ppm), airflow, risk, simulated interlock</td></tr>
+<tr><td><code>airway-e01…e06</code></td><td>6</td><td>flow (m³/s), obstruction</td></tr>
+<tr><td><code>fan-main · fan-aux</code></td><td>2</td><td>speed, requested speed, rpm, kW, RUNNING / FAULTED</td></tr>
+<tr><td><code>shearer-z04</code></td><td>1</td><td>RUNNING / TRIPPED, kW, cutting CH₄ and CO</td></tr></table>
+<p style="font-size:13.5px;margin-top:12px">Relations are Ditto attributes: each airway names its from- and to-zone; each zone lists its airways, neighbours, fans and equipment; all twins carry <code>_parents: mineguard:mine-01</code>. Inspect them live at <code>/twins</code>.</p></div></div>
+<div class="footer"><span>mineguard/data/mine_topology.json · backend/app/integrations/bootstrap_twins.py</span><span>3 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Architecture</p><h2>The UI reads the platform, not the simulator</h2>
-<div class="flow"><div class="node"><b>Physics model</b><br><span class="small">0.5 s tick</span></div><span class="arrow">→</span><div class="node"><b>MQTT</b><br><span class="small">telemetry/mineguard/…</span></div><span class="arrow">→</span><div class="node"><b>Eclipse Ditto</b><br><span class="small">9 twins</span></div><span class="arrow">→</span><div class="node"><b>Batch readback</b><br><span class="small">1 request, 1 Hz</span></div><span class="arrow">→</span><div class="node"><b>WebSocket</b><br><span class="small">React + Three.js</span></div></div>
-<div class="grid"><div class="card"><h3>Official path preserved</h3><p>Complete <code>modify /features</code> messages to the OpenEgiz broker; Ditto events → Telegraf → InfluxDB → Grafana. The official <code>make smoke</code> passes with MineGuard publishing.</p></div>
-<div class="card"><h3>Verified readback</h3><p>A publication counts only when all nine twins return the same run ID and tick. The UI state is rebuilt from that Ditto JSON (<code>ECLIPSE_DITTO_READBACK</code>). Scenario commands are guarded and simulation-only.</p></div></div>
-<div class="footer"><span>Two non-root, read-only overlay containers on the official Compose stack</span><span>4 / 12</span></div></section>
+<!-- 4 · Command Center -->
+<section class="slide"><p class="eyebrow">Command Center · http://127.0.0.1:8091</p><h2>Everything on screen is read back from Eclipse Ditto</h2>
+<div class="row" style="gap:26px">
+<div style="flex:0 0 7.9in;position:relative"><img class="shot" src="final-scenario-evidence/06-emergency-acknowledged.png">
+<span class="callout" style="left:47%;top:30%">1</span><span class="callout" style="left:21%;top:69%">2</span><span class="callout" style="left:83.6%;top:41%">3</span><span class="callout" style="left:83.6%;top:13%">4</span><span class="callout" style="left:23.5%;top:94.5%">5</span><span class="callout" style="left:-2.2%;top:46%">6</span></div>
+<div class="col legend">
+<div><span class="n">1</span><p><b>3D cutaway</b>risk colours per zone, a methane volume that grows with CH₄, airflow particles, fan rotor at actual RPM</p></div>
+<div><span class="n">2</span><p><b>Ventilation network</b>airways E01–E06 with live m³/s; a blocked airway turns dashed amber with its multiplier</p></div>
+<div><span class="n">3</span><p><b>Safety Response</b>production, evacuation, ventilation; each fan's requested → actual % with PENDING / ACHIEVED / FAULTED</p></div>
+<div><span class="n">4</span><p><b>Risk engine advisory</b>the worst zone, its readings and reason codes</p></div>
+<div><span class="n">5</span><p><b>Scenario tray</b>S1–S4, the active run and its time, Pause and Reset</p></div>
+<div><span class="n">6</span><p><b>Zone list</b>CH₄, CO and risk for all six zones</p></div>
+</div></div>
+<div class="footer"><span>Screenshot: S1 at EMERGENCY with both fans ACHIEVED · software WebGL (SwiftShader) with the lite render profile</span><span>4 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Physics</p><h2>Conservative, deterministic, explicit units</h2>
-<p class="equation">Airway: Δp = R·Q·|Q| · Fan: Δp = p₀·s² − K·Q² · Power: P = P_rated·s³</p>
-<p class="equation">Zone gas balance: V·dC/dt = G + Σ Q_in·C_in − Σ Q_out·C &nbsp;(methane and CO)</p>
-<div class="grid3"><div class="card"><h3>Network solve</h3><p>Bisection on the common branch pressure; flow is conserved at every junction. Main-fan failure → zero network flow.</p></div><div class="card"><h3>Stable transport</h3><p>Explicit sub-steps bounded by CFL 0.5; values outside [0,1] are rejected, never clipped. Live residual ≈ 2e-15 m³.</p></div><div class="card"><h3>Units</h3><p>Methane is a fraction internally and % volume outside (0.8 % = 8,000 ppm); CO ppm; airflow m³/s; power kW; energy kWh.</p></div></div>
-<div class="footer"><span>Steady incompressible network · well-mixed zones · documented limits</span><span>5 / 12</span></div></section>
+<!-- 5 · S1 -->
+<section class="slide"><p class="eyebrow">What-if S1 · production-face methane release</p><h2>Methane crosses every threshold — and the response follows</h2>
+<div class="row" style="gap:24px">
+<div style="flex:0 0 6.3in"><div class="card" style="padding:10px 12px 6px">
+<svg viewBox="0 0 590 330" width="100%">
+<g font-size="12" fill="#5f7880"><text x="44" y="304" text-anchor="end">0</text><text x="44" y="244" text-anchor="end">0.5</text><text x="44" y="184" text-anchor="end">1.0</text><text x="44" y="124" text-anchor="end">1.5</text><text x="44" y="64" text-anchor="end">2.0 %</text>
+<text x="52" y="320" text-anchor="middle">0 s</text><text x="133.7" y="320" text-anchor="middle">10</text><text x="215.3" y="320" text-anchor="middle">20</text><text x="297" y="320" text-anchor="middle">30</text><text x="378.7" y="320" text-anchor="middle">40</text><text x="460.3" y="320" text-anchor="middle">50</text><text x="542" y="320" text-anchor="middle">60 s</text></g>
+<g stroke="#1f3640"><line x1="52" y1="300" x2="542" y2="300"/><line x1="52" y1="60" x2="542" y2="60"/></g>
+<line x1="52" y1="240" x2="542" y2="240" stroke="#f5d451" stroke-dasharray="6 5"/><text x="540" y="234" font-size="12" fill="#f5d451" text-anchor="end">ADVISORY 0.5 %</text>
+<line x1="52" y1="180" x2="542" y2="180" stroke="#ff9f43" stroke-dasharray="6 5"/><text x="540" y="174" font-size="12" fill="#ff9f43" text-anchor="end">WARNING 1.0 % · production stop</text>
+<line x1="52" y1="120" x2="542" y2="120" stroke="#ff5d6c" stroke-dasharray="6 5"/><text x="60" y="114" font-size="12" fill="#ff5d6c">EMERGENCY 1.5 % · evacuation advisory, fans → 100 %</text>
+<line x1="386.8" y1="60" x2="386.8" y2="300" stroke="#93a9b0" stroke-dasharray="2 4"/><text x="394" y="266" font-size="11.5" fill="#93a9b0">41.0 s: EMERGENCY first seen,</text><text x="394" y="281" font-size="11.5" fill="#93a9b0">fans still at 75 % / 50 %</text>
+<polyline points="52,282 129.6,235.1 248,174.5 480.8,96.2" fill="none" stroke="#2ad4c3" stroke-width="2.5" stroke-dasharray="1 0"/>
+<g stroke="#060f15" stroke-width="2"><circle cx="52" cy="282" r="6" fill="#2ad4c3"/><circle cx="129.6" cy="235.1" r="7" fill="#f5d451"/><circle cx="248" cy="174.5" r="7" fill="#ff9f43"/><circle cx="480.8" cy="96.2" r="7" fill="#ff5d6c"/></g>
+<g font-size="12.5" font-weight="700"><text x="68" y="274" fill="#2ad4c3">0.15 %</text><text x="139" y="256" fill="#f5d451">0.54 % · 9.5 s</text><text x="258" y="198" fill="#ff9f43">1.05 % · 24.0 s</text><text x="470" y="88" fill="#ff5d6c" text-anchor="end">1.70 % · 52.5 s · fans ACHIEVED</text></g>
+</svg></div>
+<p class="cap">Z04 CH₄ sampled from the 1 Hz Ditto readback (straight lines join the samples; 0.15 % is the initial state)</p></div>
+<div class="col"><img class="shot" src="final-scenario-evidence/03-warning.png"><p class="cap">WARNING: the popup names only the production stop</p>
+<p style="font-size:14px;margin-top:12px">The Z04 source rises to 0.8 m³/s for 180 s; methane accumulates through the mass balance. WARNING trips the cutting machine (its cutting methane leaves the balance). EMERGENCY adds the evacuation advisory and drives both fans to 100 % at 5 %/s until Ditto reads them back <b>ACHIEVED</b>.</p>
+<div class="undo"><b>Undo:</b> Reset restores the exact tick-0 baseline.</div></div></div>
+<div class="footer"><span>e2e/scenario-evidence.mjs → mineguard/docs/final-scenario-evidence/report.json (observed sample times, not exact crossings)</span><span>5 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Risk and simulated safety</p><h2>Uncertainty and safety come before optimization</h2>
-<table><tr><th>State</th><th>Trigger (demonstration)</th><th>Simulated response</th></tr>
-<tr><td>ADVISORY</td><td>CH₄ ≥ 0.5 % or CO ≥ 25 ppm</td><td>ventilation request; optimizer still allowed</td></tr>
-<tr><td>WARNING</td><td>CH₄ ≥ 1.0 %, CO ≥ 35 ppm (NIOSH REL), or airflow &lt; 5 m³/s</td><td>production stop (trip power), optimizer disabled</td></tr>
-<tr><td>EMERGENCY</td><td>CH₄ ≥ 1.5 %, CO ≥ 50 ppm (OSHA PEL), or main fan failed</td><td>evacuation advisory; healthy fans driven to 100 %; failed fan excluded</td></tr>
-<tr><td>UNKNOWN_DATA</td><td>stale or invalid telemetry</td><td>treated as unsafe: production stop and evacuation, never a safe reading</td></tr></table>
-<p class="small" style="margin-top:.15in">The 1.0 % and 1.5 % tiers mirror US 30 CFR 75.323(b) action levels, for demonstration only, not as a compliance claim. Downgrades use hysteresis; every transition carries reason codes.</p>
-<div class="footer"><span>No equipment interface exists · equipment_io = false in every Ditto interlock</span><span>6 / 12</span></div></section>
+<!-- 6 · S2 -->
+<section class="slide"><p class="eyebrow">What-if S2 · main ventilation fan failure</p><h2>Losing the main fan puts every zone into EMERGENCY</h2>
+<div class="row" style="gap:26px">
+<div style="flex:0 0 7.2in"><img class="shot" src="final-scenario-evidence/07-main-fan-failure.png"><p class="cap">Ditto twin mineguard:fan-main read back FAULTED by the scenario evidence run</p></div>
+<div class="col facts">
+<div class="fact" style="border-left-color:var(--red)"><span class="k red">0 RPM</span><p>At T+10 s the main fan faults; Ditto reads back <b>FAULTED</b>.</p></div>
+<div class="fact" style="border-left-color:var(--red)"><span class="k">0 m³/s</span><p>Network airflow stops in all six airways.</p></div>
+<div class="fact" style="border-left-color:var(--red)"><span class="k">6 / 6</span><p>Zones in EMERGENCY with reason <code>FAN_FAILED</code>; the cutting machine trips.</p></div>
+<div class="fact"><span class="k teal">AUX 100 %</span><p>The failed fan is excluded (<code>FAILED_FAN_EXCLUDED</code>); the healthy fan is commanded up.</p></div>
+<div class="fact" style="border-left-color:var(--amber)"><span class="k amber">VOD off</span><p>The optimizer is disabled: safety outranks energy.</p></div>
+<div class="undo"><b>Undo:</b> Reset, or the fault clears at T+90 s; the tray then shows <code>COMPLETED</code> and keeps Reset.</div>
+</div></div>
+<div class="footer"><span>mineguard/data/scenario_defaults.json · backend/app/simulation/scenarios.py</span><span>6 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Mine visualization</p><h2>Command Center: 3D cutaway driven by Ditto state</h2>
-<div class="split"><div><p>Zone markers take the colour of the twin's risk state. Labels show live CH₄ and the risk state. A false-colour methane volume grows with CH₄. Airflow particles move with the measured intake flow and stop at zero. The fan rotor follows actual RPM and its rim turns red on a fault.</p><p>The rails show main-fan RPM, intake flow, every zone's CH₄, the risk advisory, and the selected zone's CH₄, CO and airflow.</p><p class="small">On CPU-only WebGL a lite profile applies automatically: 88 draw calls instead of 1,229, Lambert shading and no backdrop blurs.</p></div>
-<img class="shot" src="final-browser/command-center-3d.png"></div>
-<div class="footer"><span>http://127.0.0.1:8091</span><span>7 / 12</span></div></section>
+<!-- 7 · S3 -->
+<section class="slide"><p class="eyebrow">What-if S3 · roof fall on the face intake airway E03</p><h2>The network redistributes air — and the face loses its dilution flow</h2>
+<div class="row" style="gap:26px">
+<div style="flex:0 0 6.6in"><img class="shot" src="final-scenario-evidence/10-airway-obstruction.png"><p class="cap">The network map draws E03 dashed amber with “×250”</p></div>
+<div class="col"><div class="card">
+<svg viewBox="0 0 430 236" width="100%">
+<g font-size="13" fill="#c9d7db" font-weight="700"><text x="0" y="36">E01 intake</text><text x="0" y="110">E02 → Z03</text><text x="0" y="184">E03 → Z04</text></g>
+<g><rect x="100" y="16" width="264" height="16" rx="3" fill="#2f5866"/><rect x="100" y="36" width="194" height="16" rx="3" fill="#2ad4c3"/>
+<rect x="100" y="90" width="99.3" height="16" rx="3" fill="#2f5866"/><rect x="100" y="110" width="167.9" height="16" rx="3" fill="#2ad4c3"/>
+<rect x="100" y="164" width="164.7" height="16" rx="3" fill="#2f5866"/><rect x="100" y="184" width="26.3" height="16" rx="3" fill="#f5aa42"/></g>
+<g font-size="12.5" font-family="DejaVu Sans Mono,monospace"><text x="370" y="29" fill="#93a9b0">39.6</text><text x="300" y="49" fill="#2ad4c3">29.11</text><text x="205" y="103" fill="#93a9b0">14.9</text><text x="274" y="123" fill="#2ad4c3">25.18</text><text x="270" y="177" fill="#93a9b0">24.7</text><text x="132" y="197" fill="#f5aa42">3.94 (×250)</text></g>
+<g font-size="12" fill="#93a9b0"><rect x="100" y="218" width="12" height="10" fill="#2f5866"/><text x="118" y="227">baseline</text><rect x="190" y="218" width="12" height="10" fill="#2ad4c3"/><text x="208" y="227">after roof fall (m³/s)</text></g>
+</svg></div>
+<p style="font-size:14.5px;margin-top:12px">At T+10 s the resistance of E03 is multiplied by 250. Air shifts to the heading branch and total intake falls. The face drops below the <b>5 m³/s</b> dilution constraint → WARNING (<code>DILUTION_AIRFLOW_LOW</code>), the cutting machine trips, and methane rises.</p>
+<div class="undo"><b>Undo:</b> Reset, or the obstruction clears at 240 s.</div></div></div>
+<div class="footer"><span>Baseline flows: SUBMISSION.md · roof-fall flows: report.json of the scenario evidence run (Ditto readback)</span><span>7 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">What-if scenario S1</p><h2>Production-face methane release</h2>
-<div class="split"><div><p>The Z04 source rises from 0.04 to 0.8 m³/s for 180 s. Methane accumulates through the mass balance:</p>
-<table><tr><th>Stage</th><th>Tick</th><th>s</th><th>Z04 CH₄</th></tr><tr><td>ADVISORY</td><td>19</td><td>9.5</td><td>0.53 %</td></tr><tr><td>WARNING</td><td>48</td><td>24.0</td><td>1.02 %</td></tr><tr><td>EMERGENCY</td><td>87</td><td>43.5</td><td>1.53 %</td></tr></table>
-<p>At EMERGENCY, Ditto shows the Z04 interlock tripped and both fans at 100 % (model feedback <code>ACHIEVED</code>). <b>Undo:</b> Reset restores the exact tick-0 baseline.</p></div>
-<img class="shot" src="final-scenario-evidence/06-emergency-acknowledged.png"></div>
-<div class="footer"><span>Sampled from the 1 Hz Ditto readback by the scenario evidence runner</span><span>8 / 12</span></div></section>
+<!-- 8 · S4 -->
+<section class="slide"><p class="eyebrow">What-if S4 · production-face gas sensor loss</p><h2>A silent sensor is never a safe reading</h2>
+<div class="row" style="gap:26px">
+<div style="flex:0 0 6.6in"><img class="shot" src="final-scenario-evidence/11-sensor-loss.png"><p class="cap">Ditto twin mineguard:zone-z04 read back with quality STALE</p></div>
+<div class="col">
+<div class="chain" style="flex-direction:column;gap:6px"><div><b>T+10 s</b> · Z04 CH₄ and CO sensors stop reporting</div><i>↓</i><div>last value kept, marked <b class="purple">STALE</b></div><i>↓</i><div>risk becomes <b class="purple">UNKNOWN_DATA</b> — not NORMAL</div><i>↓</i><div>simulated <b>production stop</b> + <b>evacuation advisory</b>, optimizer disabled</div></div>
+<p style="font-size:14px;margin-top:12px">Z04 turns purple in the 3D scene and on the network map. The same rule protects the interface: if the readback itself goes stale, the Safety Response panel shows “UNKNOWN — telemetry stale” instead of the last good numbers.</p>
+<div class="undo"><b>Undo:</b> Reset, or the sensors return at 90 s.</div></div></div>
+<div class="footer"><span>backend/app/control/risk_engine.py · stale or invalid data is uncertainty, never a safe value</span><span>8 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">What-if scenario S2</p><h2>Main ventilation fan failure</h2>
-<div class="split"><div><p>At T+10 s the main fan faults. Ditto reads back <b>0 RPM, FAULTED</b>; network airflow is 0 m³/s; every zone goes to EMERGENCY with reason <code>FAN_FAILED</code>; the failed fan is excluded from responses; methane starts to accumulate; the optimizer reports <code>NO_FEASIBLE_SAFE_OPTIMIZATION</code>.</p>
-<p><b>Undo:</b> Reset, or the fault clears at T+90 s. Pause and resume freeze and continue the simulated clock.</p><p class="small">Both scenarios run from the Command Center or the Scenario Laboratory without code changes.</p></div>
-<img class="shot" src="final-scenario-evidence/07-main-fan-failure.png"></div>
-<div class="footer"><span>Failure, propagation and reset are verified through Eclipse Ditto</span><span>9 / 12</span></div></section>
+<!-- 9 · Energy -->
+<section class="slide"><p class="eyebrow">Energy · constraint-first ventilation on demand</p><h2>The lowest-energy fan setting that keeps every constraint</h2>
+<div class="row" style="gap:26px">
+<div style="flex:0 0 6.2in">
+<div class="chain"><div>check risk and data quality</div><i>→</i><div>enumerate ramp-limited fan settings</div><i>→</i><div>forecast airflow, CH₄, CO for 60 s</div><i>→</i><div>reject every violation</div><i>→</i><div>pick minimum energy</div></div>
+<div class="card" style="margin-top:14px">
+<svg viewBox="0 0 560 150" width="100%">
+<g font-size="14" fill="#c9d7db" font-weight="700"><text x="0" y="40">Current speeds</text><text x="0" y="56" font-size="12" fill="#93a9b0" font-weight="400">main 75 % · aux 50 %</text><text x="0" y="108">Selected VOD</text><text x="0" y="124" font-size="12" fill="#93a9b0" font-weight="400">main 60 % · aux 40 %</text></g>
+<rect x="150" y="26" width="327" height="30" rx="4" fill="#2f5866"/><rect x="150" y="94" width="167.3" height="30" rx="4" fill="#2ad4c3"/>
+<g font-size="15" font-weight="700" font-family="DejaVu Sans Mono,monospace"><text x="487" y="47" fill="#e8f1f3">1.171 kWh</text><text x="327" y="115" fill="#2ad4c3">0.599 kWh</text></g>
+<text x="150" y="146" font-size="12" fill="#5f7880">fan energy over the same 60 s horizon, same initial state</text>
+</svg></div>
+<div class="row" style="gap:12px;margin-top:12px"><div class="card col" style="padding:12px"><div class="big" style="font-size:34px">48.8 %</div><p style="margin:4px 0 0;font-size:12.5px">model estimate, not measured</p></div><div class="card col" style="padding:12px"><div class="big" style="font-size:34px">16 / 16</div><p style="margin:4px 0 0;font-size:12.5px">candidates feasible</p></div><div class="card col" style="padding:12px"><div class="big" style="font-size:34px">11.9</div><p style="margin:4px 0 0;font-size:12.5px">m³/s min forecast airflow (limit 5)</p></div></div>
+<p style="margin-top:12px;font-size:14px;color:var(--amber)">Synthetic, uncalibrated model estimate of fan energy — not a measured saving.</p>
+</div>
+<div class="col"><img class="shot" src="final-browser/energy-intelligence.png"><p class="cap">/energy captured while both fans ran at 100 %: 3.033 → 1.553 kWh (both → 80 %). Left: the baseline after a reset. Both steps cut each fan by 20 %, so both give 48.8 % (P ∝ s³; 0.8³ = 0.512).</p>
+<p style="font-size:13.5px;margin-top:10px">Selected-setting forecast: max CH₄ 0.180 %, max CO 9.9 ppm. <b>Apply recommendation (simulated)</b> re-checks safety, then the fans ramp (PENDING until the setpoint). Disabled at WARNING, EMERGENCY and UNKNOWN_DATA.</p>
+<p style="font-size:12px;color:var(--dim)">Real-world context, vendor-reported: ABB reports 54 % less ventilation energy at Boliden Kankberg; an estimated 56 % less fan power is reported for Newmont Éléonore.</p></div></div>
+<div class="footer"><span>GET /api/v1/vod/decision after reset, 25 Oct 2026 · ABB reference story · Canadian Mining Journal</span><span>9 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Energy module</p><h2>Constraint-first ventilation on demand</h2>
-<div class="split"><div><ol><li>Check risk state and data quality</li><li>Enumerate ramp-limited fan settings (±20 %)</li><li>Forecast airflow, CH₄ and CO for 60 s</li><li>Reject every constraint violation</li><li>Pick the minimum energy plus switching penalty</li></ol>
-<p>From the initial state: <span class="metric">1.171</span> kWh at current speeds vs <span class="metric">0.599</span> kWh selected (main 60 %, aux 40 %) — <b class="ok">48.8 %</b>, with all 16 candidates feasible.</p><p class="small warn">Uncalibrated synthetic model estimate, not measured savings. Disabled while any zone is WARNING, EMERGENCY or UNKNOWN_DATA.</p></div>
-<img class="shot" src="final-browser/energy-intelligence.png"></div>
-<div class="footer"><span>Same model state, sources, constraints and horizon for both strategies</span><span>10 / 12</span></div></section>
+<!-- 10 · How it works -->
+<section class="slide"><p class="eyebrow">How it works</p><h2>Model → MQTT → Ditto → readback → browser</h2>
+<svg viewBox="0 0 1150 200" width="100%">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="#2ad4c3"/></marker></defs>
+<g font-size="15" text-anchor="middle">
+<rect x="0" y="20" width="190" height="78" rx="10" fill="#0b1a21" stroke="#2ad4c3"/><text x="95" y="54" fill="#fff" font-weight="700">Physics model</text><text x="95" y="76" fill="#93a9b0" font-size="13">airflow + gas, 0.5 s tick</text>
+<rect x="240" y="20" width="190" height="78" rx="10" fill="#0b1a21" stroke="#2ad4c3"/><text x="335" y="54" fill="#fff" font-weight="700">MQTT</text><text x="335" y="76" fill="#93a9b0" font-size="13">official OpenEgiz broker</text>
+<rect x="480" y="20" width="190" height="78" rx="10" fill="#10303a" stroke="#2ad4c3" stroke-width="2"/><text x="575" y="54" fill="#fff" font-weight="700">Eclipse Ditto</text><text x="575" y="76" fill="#93a9b0" font-size="13">16 twins</text>
+<rect x="720" y="20" width="190" height="78" rx="10" fill="#0b1a21" stroke="#2ad4c3"/><text x="815" y="54" fill="#fff" font-weight="700">Batch readback</text><text x="815" y="76" fill="#93a9b0" font-size="13">1 request, 1 Hz</text>
+<rect x="960" y="20" width="190" height="78" rx="10" fill="#0b1a21" stroke="#2ad4c3"/><text x="1055" y="54" fill="#fff" font-weight="700">Browser</text><text x="1055" y="76" fill="#93a9b0" font-size="13">React + Three.js</text>
+<rect x="480" y="128" width="430" height="56" rx="10" fill="#0b1a21" stroke="#2f5866" stroke-dasharray="5 4"/><text x="695" y="162" fill="#93a9b0" font-size="13.5">Telegraf → InfluxDB → official Grafana (history dashboard)</text></g>
+<g stroke="#2ad4c3" stroke-width="2.5" marker-end="url(#a2)"><line x1="192" y1="59" x2="236" y2="59"/><line x1="432" y1="59" x2="476" y2="59"/><line x1="672" y1="59" x2="716" y2="59"/><line x1="912" y1="59" x2="956" y2="59"/><line x1="575" y1="100" x2="575" y2="124"/></g>
+</svg>
+<div class="row" style="gap:18px;margin-top:8px">
+<div class="card col"><h3>Built on OpenEgiz</h3><p style="font-size:14px">Complete Ditto <code>modify /features</code> messages go to the official broker. A publication counts only when all 16 twins return the same run ID and tick; the UI state is rebuilt from that Ditto JSON (<code>ECLIPSE_DITTO_READBACK</code>). Scenario commands go to the model, never to equipment.</p></div>
+<div class="card col"><h3>Physics with explicit units</h3><p class="mono" style="font-size:13px;color:var(--teal);margin:4px 0">airway Δp = R·Q·|Q| · fan Δp = p₀·s² − K·Q² · P = P_rated·s³</p><p class="mono" style="font-size:13px;color:var(--teal);margin:4px 0">zone V·dC/dt = G + Σ Q_in·C_in − Σ Q_out·C (CH₄, CO)</p><p style="font-size:14px">CH₄ is a fraction inside the model and % volume on screen (0.8 % = 8,000 ppm); CO ppm; airflow m³/s; power kW; energy kWh.</p></div></div>
+<div class="footer"><span>Two non-root, read-only overlay containers on the official Compose stack · mineguard/deploy/compose.mineguard.yml</span><span>10 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Evidence</p><h2>Claims are tested, and checked again at runtime</h2>
-<div class="split"><div><div class="card"><h3>Source gates</h3><p>198 backend tests (pytest), Ruff, strict mypy · 31 frontend tests (Vitest), TypeScript, ESLint, production build.</p><h3 style="margin-top:.1in">Live gates</h3><p>official <code>make smoke</code> + MineGuard WebSocket and Ditto checks; S1 emergency, interlock and reset; headless-Chrome checks of all five routes on desktop and mobile with no browser errors.</p></div>
-<div class="card" style="margin-top:.15in"><h3>Runtime validation (Evidence page)</h3><p>Ditto vs model at the same tick: CH₄ error 3.9e-11, CO 3.1e-9 ppm · balance residual 2.2e-15 m³ · two seeded S1 runs identical, reset exact · readback fresh within 1 s · single-publication traceability.</p></div></div>
-<img class="shot" src="final-browser/engineering-evidence.png"></div>
-<div class="footer"><span>mineguard/docs/validation.md</span><span>11 / 12</span></div></section>
+<!-- 11 · Safety rules -->
+<section class="slide"><p class="eyebrow">Safety rules</p><h2>Uncertainty and safety come before optimization</h2>
+<table><tr><th style="width:1.7in">State</th><th style="width:3.6in">Trigger (demonstration)</th><th>Simulated response</th></tr>
+<tr><td><span class="pill green">NORMAL</span></td><td>all constraints met</td><td>optimizer allowed</td></tr>
+<tr><td><span class="pill" style="color:#f5d451">ADVISORY</span></td><td>CH₄ ≥ 0.5 % or CO ≥ 25 ppm</td><td>stronger ventilation proposed (not applied automatically); optimizer still allowed</td></tr>
+<tr><td><span class="pill" style="color:#ff9f43">WARNING</span></td><td>CH₄ ≥ 1.0 %, CO ≥ 35 ppm, or airflow &lt; 5 m³/s</td><td><b>production stop</b>: power to the zone's equipment isolated, cutting machine tripped; optimizer disabled</td></tr>
+<tr><td><span class="pill red">EMERGENCY</span></td><td>CH₄ ≥ 1.5 %, CO ≥ 50 ppm, or main fan failed</td><td>adds <b>evacuation advisory</b>; healthy fans commanded to 100 % (5 %/s ramp); failed fan excluded</td></tr>
+<tr><td><span class="pill purple">UNKNOWN_DATA</span></td><td>stale or invalid telemetry</td><td>treated as unsafe: production stop and evacuation advisory; never shown as a safe reading</td></tr></table>
+<div class="row" style="gap:18px;margin-top:20px">
+<div class="card col"><p style="margin:0;font-size:14px">The 1.0 % and 1.5 % methane tiers mirror the action levels of <b>US 30 CFR 75.323(b)</b>. The CO tiers reuse 8-hour exposure limits (35 ppm NIOSH REL, 50 ppm OSHA PEL, both time-weighted averages) as instantaneous <b>demonstration thresholds</b> — not how those limits are defined, and not a compliance claim.</p></div>
+<div class="card col"><p style="margin:0;font-size:14px">Downgrades use hysteresis and every transition carries reason codes. Every action is simulated: Ditto interlocks carry <code>simulation_only: true</code> and <code>equipment_io: false</code>.</p></div></div>
+<div class="footer"><span>backend/app/control/risk_engine.py · safety.py · mineguard/docs/safety.md</span><span>11 / 14</span></div></section>
 
-<section class="slide"><p class="eyebrow">Run it · limits</p><h2>Three commands on a clean Ubuntu with Docker</h2>
-<p class="equation">sudo apt-get update &amp;&amp; sudo apt-get install -y make<br>bash mineguard/scripts/bootstrap.sh &nbsp;&nbsp;→ http://127.0.0.1:8091</p>
-<div class="grid"><div class="card"><h3>Limitations</h3><p>Fictional, uncalibrated mine; steady network flow without leakage or reverse flow; well-mixed zones; quasi-steady fan response; 3D renders at a few frames per second on CPU-only WebGL; no obstruction or sensor-loss scenario in the UI.</p></div>
-<div class="card"><h3>Before any real use</h3><p>Surveyed geometry, calibrated sensors and fans, an OT gateway, authentication, redundancy, alarm management, a hazard analysis and regulatory approval. All actions here are simulated.</p></div></div>
-<p style="margin-top:.15in"><span class="tag">FICTIONAL MODEL</span><span class="tag">SIMULATED ACTIONS</span><span class="tag">BUILT ON OPENEGIZ</span></p>
-<div class="footer"><span>DeepCore Labs · github.com/openegiz-contest/team-117</span><span>12 / 12</span></div></section>
+<!-- 12 · Evidence -->
+<section class="slide"><p class="eyebrow">Evidence</p><h2>Claims are tested, run live, and checked again at runtime</h2>
+<div class="row" style="gap:16px">
+<div class="card col"><div class="big">211</div><p style="margin:6px 0 0"><b>backend tests</b> (pytest) · Ruff · strict mypy</p></div>
+<div class="card col"><div class="big">41</div><p style="margin:6px 0 0"><b>frontend tests</b> (Vitest) · TypeScript · ESLint · build</p></div>
+<div class="card col"><div class="big">5 + 5</div><p style="margin:6px 0 0"><b>routes</b> at desktop and 390 px mobile, no browser errors</p></div>
+<div class="card col"><div class="big">4 / 4</div><p style="margin:6px 0 0"><b>scenarios</b> verified through the Ditto readback</p></div></div>
+<div class="row" style="gap:18px;margin-top:18px">
+<div class="card col"><h3>Live scenario gate · scenario-smoke.sh</h3><p style="font-size:14px">S1 reached Z04 EMERGENCY (1.52 % CH₄, tick 83) with the Ditto interlock verified; S3 read back E03 at 3.94 m³/s with Z04 WARNING; S4 read back Z04 UNKNOWN_DATA; reset returned Ditto to tick 0.</p></div>
+<div class="card col"><h3>Browser evidence · e2e/*.mjs</h3><p style="font-size:14px">Headless Chromium on software WebGL (SwiftShader) with the lite profile; screenshots and Ditto JSON for every S1 stage and for S2, S3 and S4 in <code>mineguard/docs/final-*</code>.</p></div>
+<div class="card col"><h3>Runtime validation · /evidence</h3><p style="font-size:14px">Ditto-vs-model unit consistency, gas-balance residual bound, scenario repeatability, readback freshness and single-publication traceability, checked by the running service.</p></div></div>
+<div class="footer"><span>mineguard/docs/validation.md · mineguard/scripts/test.sh</span><span>12 / 14</span></div></section>
+
+<!-- 13 · On the Stand -->
+<section class="slide"><p class="eyebrow">On the Stand</p><h2>Ten clicks to see everything</h2>
+<ol class="steps">
+<li>Run <code>bash mineguard/scripts/bootstrap.sh</code>, open <code>http://127.0.0.1:8091</code></li>
+<li>Click <b>Z04 — Production face</b> in the zone list: CH₄, CO and airflow meters</li>
+<li>Tray <b>S1 Gas Release</b>: ADVISORY → WARNING; the popup names the production stop</li>
+<li>EMERGENCY: Safety Response shows MAIN and AUX <b>PENDING</b>, then <b>ACHIEVED 100 %</b></li>
+<li><b>Reset</b>: Ditto returns to the tick-0 baseline</li>
+<li><b>S2 Fan Failure</b>: MAIN FAULTED, all airways 0 m³/s → Reset</li>
+<li><b>S3 Airway Block</b>: network map draws E03 dashed amber “×250” → Reset</li>
+<li><b>S4 Sensor Loss</b>: Z04 turns purple, UNKNOWN_DATA → Reset</li>
+<li><code>/energy</code> → <b>Apply recommendation (simulated)</b>; fans read PENDING, then AT SETPOINT</li>
+<li><code>/twins</code> for the 16 Ditto twins · <code>/evidence</code> for live checks · Grafana <code>:3000</code> for history</li>
+</ol>
+<div class="footer"><span>Every scenario runs without code changes, and each has its undo</span><span>13 / 14</span></div></section>
+
+<!-- 14 · Limits and closing -->
+<section class="slide"><p class="eyebrow">Limits and closing</p><h2>An honest model, built to answer “what happens if…”</h2>
+<div class="row" style="gap:18px">
+<div class="card col"><h3>Limits</h3><p style="font-size:14px">Fictional, uncalibrated mine. Steady incompressible network flow without leakage, natural ventilation or reverse flow; well-mixed zones; demonstration thresholds; fan energy from the affinity law without motor or drive efficiency. 3D renders at a few frames per second on CPU-only WebGL — numbers, labels, the network map and controls do not depend on the frame rate.</p></div>
+<div class="card col"><h3>Before any real use</h3><p style="font-size:14px">Surveyed geometry, calibrated sensors and fans, an OT gateway, authentication and roles, redundancy, alarm management, a hazard analysis and regulatory approval. All actions here are simulated; nothing connects to equipment.</p></div></div>
+<p style="font-size:34px;line-height:1.2;color:#fff;margin:34px 0 22px;letter-spacing:-.5px;max-width:11.5in">Methane is invisible. A connected twin makes its consequences visible — <span class="amber">and keeps safety ahead of energy.</span></p>
+<div class="card" style="font:14px 'DejaVu Sans Mono',monospace;color:var(--teal)">sudo apt-get update &amp;&amp; sudo apt-get install -y make &nbsp;·&nbsp; bash mineguard/scripts/bootstrap.sh &nbsp;→&nbsp; http://127.0.0.1:8091</div>
+<div class="footer"><span>DeepCore Labs · github.com/openegiz-contest/team-117</span><span>14 / 14</span></div></section>
+
 </body></html>

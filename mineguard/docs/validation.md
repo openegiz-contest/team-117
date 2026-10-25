@@ -78,32 +78,61 @@ Checks executed by the running service, shown on the Evidence page:
 | Telemetry freshness | Ditto readback verified within the 1 s publication cycle |
 | Source traceability | UI state rebuilt from all managed Ditto twins (16 in this version) sharing one publication run ID |
 
-## Browser evidence (headless Chrome, SwiftShader CPU WebGL)
+## Final-day run of this version (commit `aafd677`)
 
-These screenshots and stage values were captured on the previous version
-(commit `41f6762`), before the airway and cutting-machine twins were added. They have not yet been re-captured for the
-16-twin version; the e2e scripts in this commit already expect 16 twins and
-add S3/S4 captures.
+The Command Center fixes (Safety Response panel, incident wording, scenario
+tray, footer tick) were applied on top of `ecc6a7d` and checked on a second
+machine (Arch Linux, Docker Engine 29.9, Compose 5.6) on 25 October 2026:
+
+| Step | Result |
+|---|---|
+| `bash mineguard/scripts/test.sh` | pass: 211 pytest, 41 Vitest, Ruff, strict mypy, TypeScript, ESLint, build |
+| readiness | `"status":"ready"`, `"platform_connected":true` |
+| `bash mineguard/scripts/scenario-smoke.sh` | pass: S1 Z04 EMERGENCY at tick 83 (1.52 % CH₄) with the Ditto interlock verified; S3 E03 3.94 m³/s with Z04 WARNING; S4 Z04 UNKNOWN_DATA; reset to tick 0 |
+| `bash mineguard/scripts/full-smoke.sh` | not run on this machine: the official Grafana 12.3.0 container (unchanged upstream) exits at startup on this host, also when started alone without MineGuard. The last full-smoke pass is the fresh-volume rehearsal above |
+
+## Browser evidence (headless Chromium, SwiftShader CPU WebGL)
+
+Captured on 25 October 2026 (12:52–12:55 UTC) from commit `aafd677` against
+the live stack; the files are in `docs/final-browser/` and
+`docs/final-scenario-evidence/`.
 
 `frontend/e2e/browser-smoke.mjs` → `docs/final-browser/`: all five routes at
 1680×1080 and 390 px mobile width, six zones selectable, sensor toggle, stable
-camera, Twin Inspector showing 15 authenticated Ditto responses, no
-horizontal overflow, no browser exception.
+camera, Twin Inspector showing 16 authenticated Ditto responses, no
+horizontal overflow, no browser exception (`"browser_errors": []`).
+Renderer: ANGLE on SwiftShader (Vulkan), render profile `v3-software-lite`,
+93 draw calls, about 4.4 frames per second in a 3.2 s sample.
 
-`frontend/e2e/scenario-evidence.mjs` → `docs/final-scenario-evidence/`:
+`frontend/e2e/scenario-evidence.mjs` → `docs/final-scenario-evidence/` (S1):
 
 | Stage | Tick | Simulated s | Z04 CH₄ (% vol) |
 |---|---:|---:|---:|
-| Baseline | 4 | 2.0 | 0.150 |
-| ADVISORY | 19 | 9.5 | 0.529 |
-| WARNING | 48 | 24.0 | 1.020 |
-| EMERGENCY | 87 | 43.5 | 1.534 |
+| ADVISORY | 19 | 9.5 | 0.541 |
+| WARNING | 48 | 24.0 | 1.046 |
+| EMERGENCY | 105 | 52.5 | 1.698 |
 
-At EMERGENCY, both fans were read back from Ditto at 100 % speed (model
-feedback `ACHIEVED`), and the Z04 interlock was tripped. S2 then read back the
-main fan at 0 RPM, FAULTED. Reset returned Ditto to tick 0. Samples are taken
-from the 1 Hz readback, so they are observed sample times, not exact
+EMERGENCY was first seen at tick 82 with the fans still at 75 % (main) and
+50 % (aux); the runner waits until the fan feedback reads `ACHIEVED`, so the
+EMERGENCY row is sampled after both fans reached 100 %. Ditto then showed the
+Z04 interlock tripped with `equipment_io: false` and both fan twins at 100 %
+(`ditto_emergency_verified`, `simulated_fan_response_verified`). S2 read back
+the main fan at 0 RPM, FAULTED (`fan_failure_verified`). S3 read back the
+roof fall on E03 (×250) with flows E01 29.11, E02 25.18, E03 3.94 m³/s and the
+cutting machine tripped. S4 read back Z04 as UNKNOWN_DATA with quality STALE
+(`sensor_loss_verified`). The final reset returned Ditto to tick 0. Samples
+are taken from the 1 Hz readback, so they are observed sample times, not exact
 threshold-crossing times.
+
+The first scenario-evidence run on this machine stopped at the Ditto interlock
+check right after EMERGENCY, before the readback showed the trip. The evidence
+folder was restored from Git and the runner was started again unchanged; the
+second run passed every check above.
+
+Energy decision after a reset (`GET /api/v1/vod/decision`): 16 candidates, all
+feasible; selected main 60 %, aux 40 %; 60 s horizon 1.1708 kWh at the current
+speeds versus 0.5995 kWh selected (48.8 %, model estimate); forecast max CH₄
+0.180 %, max CO 9.9 ppm, min airflow 11.9 m³/s.
 
 ## Historical integration evidence
 

@@ -128,6 +128,12 @@ official OpenEgiz v1.0.4 stack from this repository:
   Every reset returns Ditto to the tick-0 baseline.
 - **Works:** source gates — 211 backend tests (pytest), Ruff, strict mypy;
   41 frontend tests (Vitest), TypeScript, ESLint, production build.
+- **Works:** a final-day re-check of this version on a second machine:
+  source gates (211 pytest, 41 Vitest), `scenario-smoke.sh`, and the browser
+  evidence runners: all five routes at desktop and 390 px mobile width with no
+  browser errors, and S1–S4 captured from the Ditto readback
+  (`mineguard/docs/final-scenario-evidence/`, details in
+  `mineguard/docs/validation.md`).
 - **Works:** live runtime validation on the Evidence page. All five checks
   pass; for example, the Ditto readback matches the model within 2e-11 in
   CH₄ fraction, and the maximum gas-balance residual stays around 1e-14 m³.
