@@ -21,7 +21,7 @@ export function NetworkMap({ topology, model, selected, onSelect }: {
 
   return <figure className="network-map" aria-label="Ventilation network plan view from Eclipse Ditto readback">
     <figcaption><b>VENTILATION NETWORK</b><span>plan view · Ditto readback · m³/s</span></figcaption>
-    <svg viewBox="0 20 800 340" role="img" aria-label="Directed airway graph with live airflow">
+    <svg viewBox="0 12 800 352" role="img" aria-label="Directed airway graph with live airflow">
       <defs>
         <marker id="network-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor" /></marker>
       </defs>
@@ -71,7 +71,7 @@ export function NetworkMap({ topology, model, selected, onSelect }: {
         const y = home.y + (below ? NODE_RADIUS + 26 : -NODE_RADIUS - 22)
         return <g key={fan.id} className={`network-fan ${fan.faulted ? 'faulted' : ''}`} data-fan={fan.id} transform={`translate(${home.x} ${y})`}>
           <circle r={11} />
-          <text x={16} y={4}>{fan.id === 'FAN_MAIN' ? 'MAIN' : 'AUX'} {fan.faulted ? 'FAULT' : `${Math.round(fan.actualRpm)} rpm`}</text>
+          <text x={below ? -16 : 16} y={5} textAnchor={below ? 'end' : 'start'}>{fan.id === 'FAN_MAIN' ? 'MAIN' : 'AUX'} {fan.faulted ? 'FAULT' : `${Math.round(fan.actualRpm)} rpm`}</text>
         </g>
       })}
     </svg>

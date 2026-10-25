@@ -31,7 +31,8 @@ docker compose "${compose_files[@]}" up -d --build --wait --wait-timeout 600 \
 
 port="${MINEGUARD_PORT:-8091}"
 base="http://127.0.0.1:${port}"
-deadline=$((SECONDS + 150))
+# Ditto can need several minutes of CPU after a fresh build; the judge limit is 75 min.
+deadline=$((SECONDS + 450))
 while (( SECONDS < deadline )); do
   if curl --max-time 10 --fail --silent --show-error "$base/api/health/ready" >"$readiness_file" \
     && python3 - "$readiness_file" <<'PY'

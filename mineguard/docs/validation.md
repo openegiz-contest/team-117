@@ -13,7 +13,7 @@ real-mine accuracy.
 | Strict mypy, 25 source files | pass |
 | pytest | **211 passed** |
 | TypeScript, ESLint (frontend) | pass |
-| Vitest | **36 passed** |
+| Vitest | **41 passed** |
 | Vite production build | pass |
 
 Backend tests cover topology validation, unit conversions, gas-balance

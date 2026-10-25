@@ -47,6 +47,8 @@ export interface Snapshot {
   } | null
   fans: Array<{
     fan_id: string
+    /** Speed the simulated drive is commanded to; the actual speed ramps towards it. */
+    requested_speed_fraction?: number
     actual_speed_fraction: number
     actual_speed_rpm: number
     faulted: boolean
@@ -193,6 +195,7 @@ function isFanState(value: unknown): value is Snapshot['fans'][number] {
   if (!isRecord(value)) return false
   return (
     isIdentifier(value.fan_id) &&
+    (value.requested_speed_fraction === undefined || isFraction(value.requested_speed_fraction)) &&
     isFraction(value.actual_speed_fraction) &&
     isNonnegative(value.actual_speed_rpm) &&
     typeof value.faulted === 'boolean' &&

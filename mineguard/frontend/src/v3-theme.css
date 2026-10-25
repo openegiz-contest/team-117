@@ -81,3 +81,27 @@ html[data-render-profile=software] .floating-label,html[data-render-profile=soft
 .network-machine rect{fill:#2b2410;stroke:#ffc247;stroke-width:3}.network-machine text{fill:#ffd27a;font-size:16px;font-weight:600}
 .network-machine.tripped rect{fill:#3a0f19;stroke:#ff506e}.network-machine.tripped text{fill:#ff8095}
 .machine-state strong{color:#ffc247}.machine-state.tripped strong{color:#ff6b82}
+.tray-label{white-space:normal}
+.tray-scenario{font:700 10px/1.2 Rajdhani,Arial,sans-serif;color:#9fe5f5;border:1px solid #205d75;border-radius:3px;padding:6px 8px;letter-spacing:.04em;background:#03111b}
+.tray-scenario.running{color:#ffcc3e;border-color:#7a6220}.tray-scenario.paused{color:#9fb8c4}.tray-scenario.completed{color:#7dffb0;border-color:#1f6a46}
+.safety-response-panel{flex:0 0 auto}
+.safety-lines{display:grid;gap:5px;margin-top:8px}
+.safety-lines>div{display:flex;justify-content:space-between;gap:8px;align-items:baseline;border-bottom:1px solid #0e3a4d;padding:3px 0;font:700 10px Rajdhani,Arial,sans-serif;color:#63dbe6}
+.safety-lines strong{font:700 11px/1.2 Rajdhani,Arial,sans-serif;color:#7dffb0;text-align:right}
+.safety-lines .alert strong{color:#ff6b82}.safety-lines .active strong{color:#ffcc3e}
+.fan-responses{display:grid;gap:6px;margin-top:9px}
+.fan-response{border:1px solid #0e6b8a;border-radius:5px;padding:6px 8px;background:#051625}
+.fan-response>div{display:flex;align-items:center;gap:8px;font:700 12px Rajdhani,Arial,sans-serif;color:#c8eaf4}
+.fan-response>div span{flex:1;color:#40f1ff}
+.fan-response em{font:700 10px Rajdhani,Arial,sans-serif;font-style:normal;padding:1px 5px;border-radius:3px;border:1px solid currentColor;color:#9fb8c4}
+.fan-response.pending em{color:#ffcc3e}.fan-response.achieved em{color:#7dffb0}.fan-response.faulted em{color:#ff6b82}.fan-response.faulted{border-color:#ff506e}
+.fan-response small{display:block;margin-top:3px;font:600 10px Rajdhani,Arial,sans-serif;color:#7fb2c2}
+.safety-unknown{margin:10px 0 2px;font:700 12px Rajdhani,Arial,sans-serif;color:#c58cff}
+.incident-actions{text-align:left;margin:4px 0 14px;padding-left:18px;font-size:13px;line-height:1.5}
+.meter-header strong.red{color:#ff6b82}.meter-track span.red{background:#ff506e;box-shadow:0 0 12px #ff506e}
+.network-map figcaption{font-size:12px}
+.network-airway text{font-size:23px}
+.network-zone .zone-code{font-size:20px}
+.network-zone .zone-gas{font-size:17px}
+.network-fan text,.network-machine text{font-size:19px}
+@media(max-width:740px){.sim-tray{flex-wrap:wrap;justify-content:center;white-space:normal;width:calc(100% - 16px)}.tray-scenario{flex-basis:100%;text-align:center}}

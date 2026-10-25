@@ -1,13 +1,14 @@
-import { AlertTriangle, Fan, LocateFixed, Pause, Play, RotateCcw, ShieldAlert, Wind } from 'lucide-react'
+import { AlertTriangle, Fan, LocateFixed, Pause, Play, RotateCcw, ShieldAlert, ShieldCheck, Wind } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { getScenarioState, scenarioCommand } from '../api/client'
-import type { RiskState, ScenarioState } from '../api/contracts'
+import type { RiskState, ScenarioState, Snapshot } from '../api/contracts'
 import { useMineState } from '../hooks/useMineState'
 import { NetworkMap } from '../mine-map/NetworkMap'
 import { buildMineScene, highestRisk, RISK_PRIORITY } from '../mine-map/sceneModel'
 import { V3MineScene } from '../v3/V3MineScene'
+import { activeSafetyIncident, describeSafetyIncident, summarizeSafetyResponse } from './safetyResponse'
 
 const idleScenario: ScenarioState = { scenario_id: null, status: 'IDLE', elapsed_seconds: 0, duration_seconds: 0, simulation_only: true, applied_actions: [] }
 const display = (value: number | undefined, digits = 1) => value === undefined || !Number.isFinite(value) ? '—' : value.toFixed(digits)
@@ -19,6 +20,29 @@ function PanelHeading({ icon, title, aside }: { icon: React.ReactNode; title: Re
 
 function Meter({ label, value, max, unit, colour = 'cyan' }: { label: string; value: number; max: number; unit: string; colour?: string }) {
   return <div className="meter"><div className="meter-header"><span>{label}</span><strong className={colour}>{display(value, label === 'METHANE CH₄' ? 3 : 1)} {unit}</strong></div><div className="meter-track"><span className={colour} style={{ width: `${Math.max(0, Math.min(100, value / max * 100))}%` }} /></div></div>
+}
+
+function zoneList(zones: string[], total: number) {
+  return zones.length === total ? `ALL ${total} ZONES` : zones.join(', ')
+}
+
+function SafetyResponsePanel({ snapshot, stale }: { snapshot: Snapshot; stale: boolean }) {
+  const summary = summarizeSafetyResponse(snapshot)
+  const total = snapshot.safety.length
+  const productionStopped = summary.productionStopZones.length > 0 || !summary.productionRunning
+  return <section className="panel safety-response-panel" aria-label="Simulated safety response"><PanelHeading icon={<ShieldCheck size={19} />} title={<>SAFETY<br />RESPONSE</>} aside={<span className="tiny-badge">SIMU<br />LATED</span>} />
+    {stale ? <p className="safety-unknown"><strong>UNKNOWN</strong> — telemetry stale</p> : <>
+      <div className="safety-lines">
+        <div className={productionStopped ? 'alert' : ''}><span>PRODUCTION</span><strong>{productionStopped ? `STOPPED${summary.productionStopZones.length ? ` · ${zoneList(summary.productionStopZones, total)}` : ''}` : 'RUNNING'}</strong></div>
+        <div className={summary.evacuationZones.length ? 'alert' : ''}><span>EVACUATION</span><strong>{summary.evacuationZones.length ? `ADVISED · ${zoneList(summary.evacuationZones, total)}` : 'NONE'}</strong></div>
+        <div className={summary.ventilation === 'NONE' ? '' : 'active'}><span>VENTILATION</span><strong>{summary.ventilation === 'COMMANDED' ? 'EMERGENCY · FANS TO 100 %' : summary.ventilation === 'PROPOSED' ? `INCREASE PROPOSED · ${zoneList(summary.ventilationZones, total)}` : 'NONE'}</strong></div>
+      </div>
+      <div className="fan-responses">{summary.fans.map((fan) => <div key={fan.fanId} className={`fan-response ${fan.status.toLowerCase().replace(' ', '-')}`} data-fan-response={fan.fanId}>
+        <div><b>{fan.label}</b><span>{Math.round(fan.requestedPercent)}% → {Math.round(fan.actualPercent)}%</span><em>{fan.status}</em></div>
+        <small>{Math.round(fan.rpm).toLocaleString()} RPM · {fan.powerKw.toFixed(1)} kW</small>
+      </div>)}</div>
+    </>}
+  </section>
 }
 
 export function CommandCenter() {
@@ -50,6 +74,8 @@ export function CommandCenter() {
   const systemRisk = snapshot ? (stale ? 'UNKNOWN_DATA' : highestRisk(snapshot)) : 'UNKNOWN_DATA'
   const highestZone = model?.zones.reduce((current, zone) => RISK_PRIORITY[zone.risk] > RISK_PRIORITY[current.risk] ? zone : current, model.zones[0])
   const activeScenario = scenario.status === 'RUNNING' || scenario.status === 'PAUSED'
+  // After COMPLETED the model is not at baseline, so a new start requires Reset first.
+  const scenarioIdle = scenario.status === 'IDLE'
 
   const command = async (path: string) => {
     setPending(true); setCommandError(null)
@@ -63,7 +89,14 @@ export function CommandCenter() {
   const intakeFlow = snapshot.airways.find((airway) => airway.airway_id === 'E01')?.flow_m3s ?? 0
   const alertTitle = highestZone?.risk === 'EMERGENCY' ? 'Emergency simulation response active' : highestZone?.risk === 'WARNING' ? 'Hazard threshold warning' : highestZone?.risk === 'ADVISORY' ? 'Elevated methane advisory' : highestZone?.risk === 'UNKNOWN_DATA' ? 'Telemetry uncertainty' : 'No configured constraint exceeded'
   const alertText = highestZone ? `${highestZone.id} · ${highestZone.name}: ${highestZone.methanePercent.toFixed(3)}% CH₄, ${highestZone.coPpm.toFixed(1)} ppm CO, ${highestZone.airflowM3s.toFixed(1)} m³/s airflow.` : 'No zone state available.'
-  const safetyIncident = stale ? undefined : snapshot.safety.find((item) => item.evacuation_advisory || item.production_stop)
+  const safetyIncident = stale ? undefined : activeSafetyIncident(snapshot)
+  const incidentCopy = safetyIncident ? describeSafetyIncident(safetyIncident) : null
+  const scenarioCode = scenario.scenario_id?.split('_')[0] ?? ''
+  // While a scenario is active its clock is the model clock, so use the Ditto readback time,
+  // unless the readback still shows the run before this start (start resets the clock).
+  const readbackSeconds = snapshot.simulated_seconds <= scenario.elapsed_seconds + 3 ? snapshot.simulated_seconds : scenario.elapsed_seconds
+  const scenarioSeconds = scenario.status === 'COMPLETED' ? scenario.duration_seconds : activeScenario ? Math.min(readbackSeconds, scenario.duration_seconds) : scenario.elapsed_seconds
+  const scenarioLabel = scenarioIdle || !scenario.scenario_id ? 'BASELINE · NO SCENARIO' : `${scenarioCode} · ${scenario.status} · ${Math.floor(scenarioSeconds)} / ${Math.round(scenario.duration_seconds)} s`
   const incidentKey = safetyIncident ? `${scenario.scenario_id ?? 'BASELINE'}:${safetyIncident.zone_id}:${safetyIncident.risk_state}` : null
 
   return <>
@@ -75,10 +108,10 @@ export function CommandCenter() {
           <div className="vent-heading"><span>ACTUAL SPEED</span><strong>{Math.round((mainFan?.speedFraction ?? 0) * 100)}%</strong></div>
           <input type="range" min="0" max="100" value={Math.round((mainFan?.speedFraction ?? 0) * 100)} readOnly aria-label="Actual simulated fan speed" />
           {model.production && <div className={`vent-heading machine-state ${model.production.running ? 'running' : 'tripped'}`}><span>{model.production.zoneId} CUTTING MACHINE</span><strong>{model.production.running ? `RUNNING · ${Math.round(model.production.powerKw)} kW` : 'TRIPPED (SIMULATED)'}</strong></div>}
-          <button type="button" className="emergency-button" disabled={pending || activeScenario} onClick={() => void command('S1_METHANE_LEAK/start')}><AlertTriangle size={15} /> SIMULATE<br />METHANE OUTBURST</button>
+          <button type="button" className="emergency-button" disabled={pending || !scenarioIdle} onClick={() => void command('S1_METHANE_LEAK/start')}><AlertTriangle size={15} /> S1 · SIMULATE<br />METHANE OUTBURST</button>
         </section>
         <section className="panel telemetry-panel"><PanelHeading icon={<Wind size={19} />} title={<>SECTOR<br />TELEMETRY</>} aside={<span className="stream-state">LIVE<br />READINGS</span>} />
-          <div className="zone-list">{model.zones.map((zone) => <button type="button" key={zone.id} onClick={() => setSelected(zone.id)} className={`zone-row ${rowClass(zone.risk, selected === zone.id)}`}><div className="zone-name"><b>{zone.id} — {zone.name}</b><small>{zone.quality} · SYNTHETIC PHYSICS</small></div><div className="zone-reading"><strong>{zone.methanePercent.toFixed(3)}%</strong><span>CH₄</span><small>{zone.risk.replace('_', ' ')}</small></div></button>)}</div>
+          <div className="zone-list">{model.zones.map((zone) => <button type="button" key={zone.id} onClick={() => setSelected(zone.id)} className={`zone-row ${rowClass(zone.risk, selected === zone.id)}`}><div className="zone-name"><b>{zone.id} — {zone.name}</b><small>{zone.quality} · CO {zone.coPpm.toFixed(1)} ppm · SYNTHETIC</small></div><div className="zone-reading"><strong>{zone.methanePercent.toFixed(3)}%</strong><span>CH₄</span><small>{zone.risk.replace('_', ' ')}</small></div></button>)}</div>
           <div className="rail-note">{snapshot.publication_status === 'ECLIPSE_DITTO_READBACK' ? 'ECLIPSE DITTO READBACK' : 'LOCAL MODEL'} · {transport} · T+{snapshot.simulated_seconds.toFixed(1)}s · TICK {snapshot.tick}</div>
         </section>
       </aside>
@@ -88,7 +121,7 @@ export function CommandCenter() {
         <V3MineScene model={model} selected={selectedZone.id} onSelect={setSelected} airflow={airflow} wireframe={wireframe} resetSignal={resetSignal} showSensors={showSensors} />
         <div className="selected-sector-pop"><div>SELECTED SECTOR <span>{selectedZone.id}</span></div><b>{selectedZone.name}</b><p>CH₄ <strong>{selectedZone.methanePercent.toFixed(3)}%</strong><span className={selectedZone.risk.toLowerCase()}>{selectedZone.risk.replace('_', ' ')}</span></p><small>FLOW: {selectedZone.airflowM3s.toFixed(1)} m³/s · QUALITY: {selectedZone.quality}</small></div>
         <NetworkMap topology={topology} model={model} selected={selectedZone.id} onSelect={setSelected} />
-        <div className="sim-tray"><span className="tray-label">SIMULATION CONTROL</span>{activeScenario ? <button disabled={pending} onClick={() => void command('reset')}><RotateCcw size={12} /> Reset</button> : <button disabled={pending} onClick={() => void command('S1_METHANE_LEAK/start')}><Play size={12} /> Gas Release</button>}<button disabled={pending || scenario.status === 'IDLE'} onClick={() => void command(scenario.status === 'PAUSED' ? 'resume' : 'pause')}>{scenario.status === 'PAUSED' ? <Play size={12} /> : <Pause size={12} />} {scenario.status === 'PAUSED' ? 'Resume' : 'Pause'}</button><button disabled={pending || activeScenario} onClick={() => void command('S2_MAIN_FAN_FAILURE/start')}><Fan size={12} /> Fan Failure</button><button disabled={pending || activeScenario} onClick={() => void command('S3_AIRWAY_OBSTRUCTION/start')}><Wind size={12} /> Airway Block</button><button disabled={pending || activeScenario} onClick={() => void command('S4_SENSOR_LOSS/start')}><AlertTriangle size={12} /> Sensor Loss</button></div>
+        <div className="sim-tray"><span className="tray-label">SIMULATION<br />CONTROL</span><span className={`tray-scenario ${scenario.status.toLowerCase()}`} aria-live="polite">{scenarioLabel}</span>{!scenarioIdle && <button disabled={pending} onClick={() => void command('reset')}><RotateCcw size={12} /> Reset</button>}<button disabled={pending || !scenarioIdle} onClick={() => void command('S1_METHANE_LEAK/start')}><Play size={12} /> S1 Gas Release</button><button disabled={pending || !activeScenario} onClick={() => void command(scenario.status === 'PAUSED' ? 'resume' : 'pause')}>{scenario.status === 'PAUSED' ? <Play size={12} /> : <Pause size={12} />} {scenario.status === 'PAUSED' ? 'Resume' : 'Pause'}</button><button disabled={pending || !scenarioIdle} onClick={() => void command('S2_MAIN_FAN_FAILURE/start')}><Fan size={12} /> S2 Fan Failure</button><button disabled={pending || !scenarioIdle} onClick={() => void command('S3_AIRWAY_OBSTRUCTION/start')}><Wind size={12} /> S3 Airway Block</button><button disabled={pending || !scenarioIdle} onClick={() => void command('S4_SENSOR_LOSS/start')}><AlertTriangle size={12} /> S4 Sensor Loss</button></div>
       </section>
 
       <aside className="right-rail rail">
@@ -96,14 +129,15 @@ export function CommandCenter() {
           <div className={`advisory-box ${systemRisk === 'EMERGENCY' ? 'critical' : ''}`}><strong><AlertTriangle size={17} /> {alertTitle}</strong><p>{alertText}</p><small>{highestZone?.reasons.join(' · ') || 'VALIDATED LIVE STATE'}</small></div>
           <button type="button" className="optimize-button" onClick={() => navigate('/energy')}>OPEN VOD DECISION TRACE</button>
         </section>
+        <SafetyResponsePanel snapshot={snapshot} stale={stale} />
         <section className="panel atmos-panel"><PanelHeading icon={<Wind size={19} />} title={<>SELECTED SECTOR<br />STATUS</>} />
-          <Meter label="METHANE CH₄" value={selectedZone.methanePercent} max={2} unit="% vol" colour={selectedZone.risk === 'EMERGENCY' ? 'amber' : 'cyan'} />
+          <Meter label="METHANE CH₄" value={selectedZone.methanePercent} max={2} unit="% vol" colour={selectedZone.risk === 'EMERGENCY' || selectedZone.risk === 'UNKNOWN_DATA' ? 'red' : selectedZone.risk === 'WARNING' ? 'amber' : 'cyan'} />
           <Meter label="CO CARBON MONOXIDE" value={selectedZone.coPpm} max={50} unit="ppm" />
           <Meter label="AIRFLOW" value={selectedZone.airflowM3s} max={45} unit="m³/s" />
           <div className="detail-grid compact-sector"><div className="detail"><small>DEPTH</small><strong>{selectedZone.depthM.toFixed(0)} m</strong></div><div className="detail"><small>QUALITY</small><strong>{selectedZone.quality}</strong></div></div>
         </section>
       </aside>
     </div>
-    {safetyIncident && incidentKey && acknowledgedIncident !== incidentKey && <div className="incident-backdrop"><section className="incident-modal" role="alertdialog" aria-modal="true"><ShieldAlert size={34} /><p className="eyebrow">SIMULATION-ONLY SAFETY INTERLOCK</p><h2>Power isolation and evacuation response</h2><p>Sector {safetyIncident.zone_id} entered {safetyIncident.risk_state}. All displayed actions are simulated and cannot control physical equipment.</p><div className="incident-buttons"><button onClick={() => { setSelected(safetyIncident.zone_id); setAcknowledgedIncident(incidentKey) }}>Inspect sector</button><button className="secondary" onClick={() => setAcknowledgedIncident(incidentKey)}>Acknowledge simulation</button></div></section></div>}
+    {safetyIncident && incidentKey && acknowledgedIncident !== incidentKey && <div className="incident-backdrop"><section className="incident-modal" role="alertdialog" aria-modal="true"><ShieldAlert size={34} /><p className="eyebrow">SIMULATION-ONLY SAFETY INTERLOCK</p><h2>{incidentCopy?.title}</h2><p>Sector {safetyIncident.zone_id} entered {safetyIncident.risk_state.replace('_', ' ')}. All displayed actions are simulated and cannot control physical equipment.</p><ul className="incident-actions">{incidentCopy?.actions.map((action) => <li key={action}>{action}</li>)}</ul><div className="incident-buttons"><button onClick={() => { setSelected(safetyIncident.zone_id); setAcknowledgedIncident(incidentKey) }}>Inspect sector</button><button className="secondary" onClick={() => setAcknowledgedIncident(incidentKey)}>Acknowledge simulation</button></div></section></div>}
   </>
 }
