@@ -105,3 +105,6 @@ html[data-render-profile=software] .floating-label,html[data-render-profile=soft
 .network-zone .zone-gas{font-size:17px}
 .network-fan text,.network-machine text{font-size:19px}
 @media(max-width:740px){.sim-tray{flex-wrap:wrap;justify-content:center;white-space:normal;width:calc(100% - 16px)}.tray-scenario{flex-basis:100%;text-align:center}}
+/* Pages taller than the window scroll; on short screens the Command Center rails scroll instead of clipping. */
+body{overflow-y:auto}
+@media(min-width:741px){.v3-command-workspace .rail{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#176c88 transparent}.v3-command-workspace .right-rail>.panel{flex-shrink:0}}
