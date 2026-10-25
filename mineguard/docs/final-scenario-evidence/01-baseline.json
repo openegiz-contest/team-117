@@ -1,6 +1,6 @@
 {
-  "tick": 4,
-  "simulated_seconds": 2,
+  "tick": 1,
+  "simulated_seconds": 0.5,
   "paused": false,
   "source_type": "SYNTHETIC_PHYSICS",
   "publication_status": "ECLIPSE_DITTO_READBACK",
@@ -18,49 +18,55 @@
     },
     {
       "zone_id": "Z03",
-      "methane_fraction": 0.0006964613999999999,
-      "co_ppm": 7.93478189
+      "methane_fraction": 0.0006991071000000001,
+      "co_ppm": 7.98354268
     },
     {
       "zone_id": "Z04",
-      "methane_fraction": 0.0015037704,
-      "co_ppm": 11.86021979
+      "methane_fraction": 0.0015009524,
+      "co_ppm": 11.96469309
     },
     {
       "zone_id": "Z05",
-      "methane_fraction": 0.0012986849000000001,
-      "co_ppm": 10.01182214
+      "methane_fraction": 0.0012996654,
+      "co_ppm": 10.00326474
     },
     {
       "zone_id": "Z06",
-      "methane_fraction": 0.0012999822,
-      "co_ppm": 8.07124906
+      "methane_fraction": 0.0013,
+      "co_ppm": 8.01801216
     }
   ],
   "airways": [
     {
       "airway_id": "E01",
-      "flow_m3s": 39.62675005
+      "flow_m3s": 39.62675005,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E02",
-      "flow_m3s": 14.91626122
+      "flow_m3s": 14.91626122,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E03",
-      "flow_m3s": 24.71048883
+      "flow_m3s": 24.71048883,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E04",
-      "flow_m3s": 14.91626122
+      "flow_m3s": 14.91626122,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E05",
-      "flow_m3s": 24.71048883
+      "flow_m3s": 24.71048883,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E06",
-      "flow_m3s": 39.62675005
+      "flow_m3s": 39.62675005,
+      "resistance_factor": 1
     }
   ],
   "fans": [
@@ -88,7 +94,7 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 2,
+      "evaluated_seconds": 0.5,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 39.62675005,
@@ -102,7 +108,7 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 2,
+      "evaluated_seconds": 0.5,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 39.62675005,
@@ -116,9 +122,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 2,
-      "methane_fraction": 0.0006964613999999999,
-      "co_ppm": 7.93478189,
+      "evaluated_seconds": 0.5,
+      "methane_fraction": 0.0006991071000000001,
+      "co_ppm": 7.98354268,
       "airflow_m3s": 14.91626122,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -130,9 +136,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 2,
-      "methane_fraction": 0.0015037704,
-      "co_ppm": 11.86021979,
+      "evaluated_seconds": 0.5,
+      "methane_fraction": 0.0015009524,
+      "co_ppm": 11.96469309,
       "airflow_m3s": 24.71048883,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -144,9 +150,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 2,
-      "methane_fraction": 0.0012986849000000001,
-      "co_ppm": 10.01182214,
+      "evaluated_seconds": 0.5,
+      "methane_fraction": 0.0012996654,
+      "co_ppm": 10.00326474,
       "airflow_m3s": 39.62675005,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -158,9 +164,9 @@
       "reason_codes": [
         "WITHIN_DEMO_CONSTRAINTS"
       ],
-      "evaluated_seconds": 2,
-      "methane_fraction": 0.0012999822,
-      "co_ppm": 8.07124906,
+      "evaluated_seconds": 0.5,
+      "methane_fraction": 0.0013,
+      "co_ppm": 8.01801216,
       "airflow_m3s": 39.62675005,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -246,5 +252,13 @@
       ],
       "fan_requests": []
     }
-  ]
+  ],
+  "production": {
+    "equipment_id": "SHEARER_Z04",
+    "zone_id": "Z04",
+    "running": true,
+    "power_kw": 600,
+    "cutting_methane_m3s": 0.025,
+    "equipment_co_m3s": 0.0001
+  }
 }

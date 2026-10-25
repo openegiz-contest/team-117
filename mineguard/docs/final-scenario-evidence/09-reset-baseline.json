@@ -40,27 +40,33 @@
   "airways": [
     {
       "airway_id": "E01",
-      "flow_m3s": 39.62675005
+      "flow_m3s": 39.62675005,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E02",
-      "flow_m3s": 14.91626122
+      "flow_m3s": 14.91626122,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E03",
-      "flow_m3s": 24.71048883
+      "flow_m3s": 24.71048883,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E04",
-      "flow_m3s": 14.91626122
+      "flow_m3s": 14.91626122,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E05",
-      "flow_m3s": 24.71048883
+      "flow_m3s": 24.71048883,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E06",
-      "flow_m3s": 39.62675005
+      "flow_m3s": 39.62675005,
+      "resistance_factor": 1
     }
   ],
   "fans": [
@@ -246,5 +252,13 @@
       ],
       "fan_requests": []
     }
-  ]
+  ],
+  "production": {
+    "equipment_id": "SHEARER_Z04",
+    "zone_id": "Z04",
+    "running": true,
+    "power_kw": 600,
+    "cutting_methane_m3s": 0.025,
+    "equipment_co_m3s": 0.0001
+  }
 }

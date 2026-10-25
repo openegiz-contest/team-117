@@ -1,6 +1,6 @@
 {
-  "tick": 22,
-  "simulated_seconds": 11,
+  "tick": 21,
+  "simulated_seconds": 10.5,
   "paused": true,
   "source_type": "SYNTHETIC_PHYSICS",
   "publication_status": "ECLIPSE_DITTO_READBACK",
@@ -18,17 +18,17 @@
     },
     {
       "zone_id": "Z03",
-      "methane_fraction": 0.000689824,
-      "co_ppm": 7.7312483
+      "methane_fraction": 0.0006864907,
+      "co_ppm": 7.71041497
     },
     {
       "zone_id": "Z04",
-      "methane_fraction": 0.001540077,
-      "co_ppm": 11.40473219
+      "methane_fraction": 0.0015220214,
+      "co_ppm": 11.34362108
     },
     {
       "zone_id": "Z05",
-      "methane_fraction": 0.0012946751000000002,
+      "methane_fraction": 0.0012943416999999999,
       "co_ppm": 10.02866836
     },
     {
@@ -40,37 +40,43 @@
   "airways": [
     {
       "airway_id": "E01",
-      "flow_m3s": 0
+      "flow_m3s": 0,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E02",
-      "flow_m3s": 0
+      "flow_m3s": 0,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E03",
-      "flow_m3s": 0
+      "flow_m3s": 0,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E04",
-      "flow_m3s": 0
+      "flow_m3s": 0,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E05",
-      "flow_m3s": 0
+      "flow_m3s": 0,
+      "resistance_factor": 1
     },
     {
       "airway_id": "E06",
-      "flow_m3s": 0
+      "flow_m3s": 0,
+      "resistance_factor": 1
     }
   ],
   "fans": [
     {
       "fan_id": "FAN_AUX",
       "requested_speed_fraction": 1,
-      "actual_speed_fraction": 1,
-      "actual_speed_rpm": 1450,
+      "actual_speed_fraction": 0.525,
+      "actual_speed_rpm": 761.25,
       "faulted": false,
-      "power_kw": 22
+      "power_kw": 3.18346875
     },
     {
       "fan_id": "FAN_MAIN",
@@ -88,7 +94,7 @@
       "reason_codes": [
         "FAN_FAILED"
       ],
-      "evaluated_seconds": 11,
+      "evaluated_seconds": 10.5,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 0,
@@ -102,7 +108,7 @@
       "reason_codes": [
         "FAN_FAILED"
       ],
-      "evaluated_seconds": 11,
+      "evaluated_seconds": 10.5,
       "methane_fraction": 0.00002,
       "co_ppm": 2,
       "airflow_m3s": 0,
@@ -116,9 +122,9 @@
       "reason_codes": [
         "FAN_FAILED"
       ],
-      "evaluated_seconds": 11,
-      "methane_fraction": 0.000689824,
-      "co_ppm": 7.7312483,
+      "evaluated_seconds": 10.5,
+      "methane_fraction": 0.0006864907,
+      "co_ppm": 7.71041497,
       "airflow_m3s": 0,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -130,9 +136,9 @@
       "reason_codes": [
         "FAN_FAILED"
       ],
-      "evaluated_seconds": 11,
-      "methane_fraction": 0.001540077,
-      "co_ppm": 11.40473219,
+      "evaluated_seconds": 10.5,
+      "methane_fraction": 0.0015220214,
+      "co_ppm": 11.34362108,
       "airflow_m3s": 0,
       "quality": "GOOD",
       "source_type": "SYNTHETIC_PHYSICS",
@@ -144,8 +150,8 @@
       "reason_codes": [
         "FAN_FAILED"
       ],
-      "evaluated_seconds": 11,
-      "methane_fraction": 0.0012946751000000002,
+      "evaluated_seconds": 10.5,
+      "methane_fraction": 0.0012943416999999999,
       "co_ppm": 10.02866836,
       "airflow_m3s": 0,
       "quality": "GOOD",
@@ -158,7 +164,7 @@
       "reason_codes": [
         "FAN_FAILED"
       ],
-      "evaluated_seconds": 11,
+      "evaluated_seconds": 10.5,
       "methane_fraction": 0.0012994943,
       "co_ppm": 8.3343739,
       "airflow_m3s": 0,
@@ -183,14 +189,14 @@
       "fan_requests": [
         {
           "fan_id": "FAN_AUX",
-          "command_id": "sim-22-Z01-FAN_AUX",
+          "command_id": "sim-21-Z01-FAN_AUX",
           "requested_speed_fraction": 1,
-          "actual_speed_fraction": 1,
-          "status": "ACHIEVED"
+          "actual_speed_fraction": 0.525,
+          "status": "PENDING"
         },
         {
           "fan_id": "FAN_MAIN",
-          "command_id": "sim-22-Z01-FAN_MAIN",
+          "command_id": "sim-21-Z01-FAN_MAIN",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 0,
           "status": "EXCLUDED_FAULTED"
@@ -212,14 +218,14 @@
       "fan_requests": [
         {
           "fan_id": "FAN_AUX",
-          "command_id": "sim-22-Z02-FAN_AUX",
+          "command_id": "sim-21-Z02-FAN_AUX",
           "requested_speed_fraction": 1,
-          "actual_speed_fraction": 1,
-          "status": "ACHIEVED"
+          "actual_speed_fraction": 0.525,
+          "status": "PENDING"
         },
         {
           "fan_id": "FAN_MAIN",
-          "command_id": "sim-22-Z02-FAN_MAIN",
+          "command_id": "sim-21-Z02-FAN_MAIN",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 0,
           "status": "EXCLUDED_FAULTED"
@@ -241,14 +247,14 @@
       "fan_requests": [
         {
           "fan_id": "FAN_AUX",
-          "command_id": "sim-22-Z03-FAN_AUX",
+          "command_id": "sim-21-Z03-FAN_AUX",
           "requested_speed_fraction": 1,
-          "actual_speed_fraction": 1,
-          "status": "ACHIEVED"
+          "actual_speed_fraction": 0.525,
+          "status": "PENDING"
         },
         {
           "fan_id": "FAN_MAIN",
-          "command_id": "sim-22-Z03-FAN_MAIN",
+          "command_id": "sim-21-Z03-FAN_MAIN",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 0,
           "status": "EXCLUDED_FAULTED"
@@ -270,14 +276,14 @@
       "fan_requests": [
         {
           "fan_id": "FAN_AUX",
-          "command_id": "sim-22-Z04-FAN_AUX",
+          "command_id": "sim-21-Z04-FAN_AUX",
           "requested_speed_fraction": 1,
-          "actual_speed_fraction": 1,
-          "status": "ACHIEVED"
+          "actual_speed_fraction": 0.525,
+          "status": "PENDING"
         },
         {
           "fan_id": "FAN_MAIN",
-          "command_id": "sim-22-Z04-FAN_MAIN",
+          "command_id": "sim-21-Z04-FAN_MAIN",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 0,
           "status": "EXCLUDED_FAULTED"
@@ -299,14 +305,14 @@
       "fan_requests": [
         {
           "fan_id": "FAN_AUX",
-          "command_id": "sim-22-Z05-FAN_AUX",
+          "command_id": "sim-21-Z05-FAN_AUX",
           "requested_speed_fraction": 1,
-          "actual_speed_fraction": 1,
-          "status": "ACHIEVED"
+          "actual_speed_fraction": 0.525,
+          "status": "PENDING"
         },
         {
           "fan_id": "FAN_MAIN",
-          "command_id": "sim-22-Z05-FAN_MAIN",
+          "command_id": "sim-21-Z05-FAN_MAIN",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 0,
           "status": "EXCLUDED_FAULTED"
@@ -328,19 +334,27 @@
       "fan_requests": [
         {
           "fan_id": "FAN_AUX",
-          "command_id": "sim-22-Z06-FAN_AUX",
+          "command_id": "sim-21-Z06-FAN_AUX",
           "requested_speed_fraction": 1,
-          "actual_speed_fraction": 1,
-          "status": "ACHIEVED"
+          "actual_speed_fraction": 0.525,
+          "status": "PENDING"
         },
         {
           "fan_id": "FAN_MAIN",
-          "command_id": "sim-22-Z06-FAN_MAIN",
+          "command_id": "sim-21-Z06-FAN_MAIN",
           "requested_speed_fraction": 1,
           "actual_speed_fraction": 0,
           "status": "EXCLUDED_FAULTED"
         }
       ]
     }
-  ]
+  ],
+  "production": {
+    "equipment_id": "SHEARER_Z04",
+    "zone_id": "Z04",
+    "running": false,
+    "power_kw": 0,
+    "cutting_methane_m3s": 0,
+    "equipment_co_m3s": 0
+  }
 }

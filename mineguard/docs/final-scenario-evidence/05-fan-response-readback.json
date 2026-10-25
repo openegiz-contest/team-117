@@ -2,14 +2,14 @@
   "model_feedback": [
     {
       "fan_id": "FAN_AUX",
-      "command_id": "sim-87-Z04-FAN_AUX",
+      "command_id": "sim-105-Z04-FAN_AUX",
       "requested_speed_fraction": 1,
       "actual_speed_fraction": 1,
       "status": "ACHIEVED"
     },
     {
       "fan_id": "FAN_MAIN",
-      "command_id": "sim-87-Z04-FAN_MAIN",
+      "command_id": "sim-105-Z04-FAN_MAIN",
       "requested_speed_fraction": 1,
       "actual_speed_fraction": 1,
       "status": "ACHIEVED"
@@ -22,23 +22,28 @@
       "attributes": {
         "_isType": false,
         "simulation_only": true,
-        "model_stage": "M10_MULTI_GAS",
-        "schema_version": 3,
+        "model_stage": "M17_VENTILATION_NETWORK",
+        "schema_version": 5,
         "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
         "name": "MineGuard X FAN_MAIN",
         "fan_id": "FAN_MAIN",
         "kind": "ventilation-fan",
         "rated_power_kw": 160,
         "rated_speed_rpm": 980,
+        "shutoff_pressure_pa": 2500,
+        "curve_resistance_pa_s2_m6": 0.5,
         "_parents": "mineguard:mine-01",
         "associated_zone_ids": [
           "mineguard:zone-z06"
+        ],
+        "airway_ids": [
+          "mineguard:airway-e06"
         ]
       },
       "features": {
         "idSimulationRun": {
           "properties": {
-            "value": "live-20261024T205249914784Z-130"
+            "value": "live-20261025T120632598930Z-2214"
           }
         },
         "speed": {
@@ -81,8 +86,8 @@
         "simulation": {
           "properties": {
             "value": true,
-            "tick": 87,
-            "simulated_seconds": 43.5
+            "tick": 105,
+            "simulated_seconds": 52.5
           }
         }
       }
@@ -93,23 +98,28 @@
       "attributes": {
         "_isType": false,
         "simulation_only": true,
-        "model_stage": "M10_MULTI_GAS",
-        "schema_version": 3,
+        "model_stage": "M17_VENTILATION_NETWORK",
+        "schema_version": 5,
         "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
         "name": "MineGuard X FAN_AUX",
         "fan_id": "FAN_AUX",
         "kind": "ventilation-fan",
         "rated_power_kw": 22,
         "rated_speed_rpm": 1450,
+        "shutoff_pressure_pa": 180,
+        "curve_resistance_pa_s2_m6": 0.7,
         "_parents": "mineguard:mine-01",
         "associated_zone_ids": [
           "mineguard:zone-z03"
+        ],
+        "airway_ids": [
+          "mineguard:airway-e02"
         ]
       },
       "features": {
         "idSimulationRun": {
           "properties": {
-            "value": "live-20261024T205249914784Z-130"
+            "value": "live-20261025T120632598930Z-2214"
           }
         },
         "speed": {
@@ -152,8 +162,8 @@
         "simulation": {
           "properties": {
             "value": true,
-            "tick": 87,
-            "simulated_seconds": 43.5
+            "tick": 105,
+            "simulated_seconds": 52.5
           }
         }
       }

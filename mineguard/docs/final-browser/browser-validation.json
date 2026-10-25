@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-24T20:54:12.294Z",
+  "checked_at": "2026-10-25T12:52:57.040Z",
   "base": "http://127.0.0.1:8091",
   "webgl": true,
   "zones": 6,
@@ -9,11 +9,11 @@
   "rendering": {
     "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
     "render_profile": "v3-software-lite",
-    "sample_ms": 3216.000000000001,
-    "approximate_raf_fps": 1.2437810945273629,
-    "draw_calls": "88",
-    "triangles": "109124",
-    "engine_render_fps": "1.0",
+    "sample_ms": 3166.5,
+    "approximate_raf_fps": 4.421285330806884,
+    "draw_calls": "93",
+    "triangles": "109916",
+    "engine_render_fps": "3.0",
     "canvas_pixels": [
       574,
       465

@@ -6,7 +6,7 @@
     "platform_configured": true,
     "platform_connected": true,
     "platform_error": "NONE",
-    "platform_last_verified_tick": 87,
+    "platform_last_verified_tick": 105,
     "state_source": "ECLIPSE_DITTO_READBACK",
     "source_type": "SYNTHETIC_PHYSICS"
   },
@@ -16,24 +16,65 @@
     "attributes": {
       "_isType": false,
       "simulation_only": true,
-      "model_stage": "M10_MULTI_GAS",
-      "schema_version": 3,
+      "model_stage": "M17_VENTILATION_NETWORK",
+      "schema_version": 5,
       "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
       "name": "MineGuard X Production face / Zone 4B",
       "display_name": "Production face / Zone 4B",
       "zone_id": "Z04",
       "zone_type": "production",
-      "_parents": "mineguard:mine-01"
+      "_parents": "mineguard:mine-01",
+      "volume_m3": 1800,
+      "depth_m": 350,
+      "boundary": "NONE",
+      "inflow_airway_ids": [
+        "mineguard:airway-e03"
+      ],
+      "outflow_airway_ids": [
+        "mineguard:airway-e05"
+      ],
+      "upstream_zone_ids": [
+        "mineguard:zone-z02"
+      ],
+      "downstream_zone_ids": [
+        "mineguard:zone-z05"
+      ],
+      "fan_ids": [],
+      "sensors": [
+        {
+          "id": "sensor-methane-z04",
+          "quantity": "methane",
+          "unit": "percent_volume"
+        },
+        {
+          "id": "sensor-co-z04",
+          "quantity": "co",
+          "unit": "ppm"
+        },
+        {
+          "id": "sensor-airflow-z04",
+          "quantity": "airflow",
+          "unit": "m3/s"
+        },
+        {
+          "id": "sensor-temperature-z04",
+          "quantity": "temperature",
+          "unit": "degC"
+        }
+      ],
+      "equipment_ids": [
+        "mineguard:shearer-z04"
+      ]
     },
     "features": {
       "idSimulationRun": {
         "properties": {
-          "value": "live-20261024T205249914784Z-130"
+          "value": "live-20261025T120632598930Z-2214"
         }
       },
       "methane": {
         "properties": {
-          "value": 1.53360352,
+          "value": 1.69845627,
           "unit": "% volume",
           "quality": "GOOD",
           "source_type": "SYNTHETIC_PHYSICS"
@@ -41,7 +82,7 @@
       },
       "co": {
         "properties": {
-          "value": 9.63541156,
+          "value": 7.75163355,
           "unit": "ppm",
           "quality": "GOOD",
           "source_type": "SYNTHETIC_PHYSICS"
@@ -58,8 +99,8 @@
       "simulation": {
         "properties": {
           "value": true,
-          "tick": 87,
-          "simulated_seconds": 43.5
+          "tick": 105,
+          "simulated_seconds": 52.5
         }
       },
       "risk": {
@@ -88,14 +129,14 @@
           "fan_requests": [
             {
               "fan_id": "FAN_AUX",
-              "command_id": "sim-87-Z04-FAN_AUX",
+              "command_id": "sim-105-Z04-FAN_AUX",
               "requested_speed_fraction": 1,
               "actual_speed_fraction": 1,
               "status": "ACHIEVED"
             },
             {
               "fan_id": "FAN_MAIN",
-              "command_id": "sim-87-Z04-FAN_MAIN",
+              "command_id": "sim-105-Z04-FAN_MAIN",
               "requested_speed_fraction": 1,
               "actual_speed_fraction": 1,
               "status": "ACHIEVED"
@@ -121,14 +162,14 @@
     "fan_requests": [
       {
         "fan_id": "FAN_AUX",
-        "command_id": "sim-87-Z04-FAN_AUX",
+        "command_id": "sim-105-Z04-FAN_AUX",
         "requested_speed_fraction": 1,
         "actual_speed_fraction": 1,
         "status": "ACHIEVED"
       },
       {
         "fan_id": "FAN_MAIN",
-        "command_id": "sim-87-Z04-FAN_MAIN",
+        "command_id": "sim-105-Z04-FAN_MAIN",
         "requested_speed_fraction": 1,
         "actual_speed_fraction": 1,
         "status": "ACHIEVED"

@@ -1,0 +1,51 @@
+{
+  "thingId": "mineguard:airway-e03",
+  "policyId": "default:basic_policy",
+  "attributes": {
+    "_isType": false,
+    "simulation_only": true,
+    "model_stage": "M17_VENTILATION_NETWORK",
+    "schema_version": 5,
+    "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
+    "name": "MineGuard X airway E03",
+    "airway_id": "E03",
+    "kind": "ventilation-airway",
+    "_parents": "mineguard:mine-01",
+    "from_zone_id": "mineguard:zone-z02",
+    "to_zone_id": "mineguard:zone-z04",
+    "length_m": 250,
+    "resistance_pa_s2_m6": 0.2,
+    "design_flow_m3s": 28,
+    "fan_ids": []
+  },
+  "features": {
+    "idSimulationRun": {
+      "properties": {
+        "value": "live-20261025T120632598930Z-2244"
+      }
+    },
+    "flow": {
+      "properties": {
+        "value": 3.9391934,
+        "unit": "m3/s",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "obstruction": {
+      "properties": {
+        "value": 250,
+        "unit": "resistance multiplier",
+        "status": "RESTRICTED",
+        "simulation_only": true
+      }
+    },
+    "simulation": {
+      "properties": {
+        "value": true,
+        "tick": 29,
+        "simulated_seconds": 14.5
+      }
+    }
+  }
+}

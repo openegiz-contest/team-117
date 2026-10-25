@@ -1,0 +1,123 @@
+{
+  "thingId": "mineguard:zone-z04",
+  "policyId": "default:basic_policy",
+  "attributes": {
+    "_isType": false,
+    "simulation_only": true,
+    "model_stage": "M17_VENTILATION_NETWORK",
+    "schema_version": 5,
+    "assumption_source": "DeepCore Labs fictional six-zone demonstration. Geometry, volumes, balanced nominal flows, resistances, fan power and speed ratings, gas inputs and sensor assignments are uncalibrated design assumptions; no operating mine data.",
+    "name": "MineGuard X Production face / Zone 4B",
+    "display_name": "Production face / Zone 4B",
+    "zone_id": "Z04",
+    "zone_type": "production",
+    "_parents": "mineguard:mine-01",
+    "volume_m3": 1800,
+    "depth_m": 350,
+    "boundary": "NONE",
+    "inflow_airway_ids": [
+      "mineguard:airway-e03"
+    ],
+    "outflow_airway_ids": [
+      "mineguard:airway-e05"
+    ],
+    "upstream_zone_ids": [
+      "mineguard:zone-z02"
+    ],
+    "downstream_zone_ids": [
+      "mineguard:zone-z05"
+    ],
+    "fan_ids": [],
+    "sensors": [
+      {
+        "id": "sensor-methane-z04",
+        "quantity": "methane",
+        "unit": "percent_volume"
+      },
+      {
+        "id": "sensor-co-z04",
+        "quantity": "co",
+        "unit": "ppm"
+      },
+      {
+        "id": "sensor-airflow-z04",
+        "quantity": "airflow",
+        "unit": "m3/s"
+      },
+      {
+        "id": "sensor-temperature-z04",
+        "quantity": "temperature",
+        "unit": "degC"
+      }
+    ],
+    "equipment_ids": [
+      "mineguard:shearer-z04"
+    ]
+  },
+  "features": {
+    "idSimulationRun": {
+      "properties": {
+        "value": "live-20261025T120632598930Z-2257"
+      }
+    },
+    "methane": {
+      "properties": {
+        "value": 0.15178548,
+        "unit": "% volume",
+        "quality": "STALE",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "co": {
+      "properties": {
+        "value": 11.33806552,
+        "unit": "ppm",
+        "quality": "STALE",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "airflow": {
+      "properties": {
+        "value": 24.71048883,
+        "unit": "m3/s",
+        "quality": "GOOD",
+        "source_type": "SYNTHETIC_PHYSICS"
+      }
+    },
+    "simulation": {
+      "properties": {
+        "value": true,
+        "tick": 21,
+        "simulated_seconds": 10.5
+      }
+    },
+    "risk": {
+      "properties": {
+        "value": "UNKNOWN_DATA",
+        "reason_codes": [
+          "SENSOR_STALE"
+        ],
+        "quality": "STALE",
+        "source_type": "SYNTHETIC_PHYSICS",
+        "transitioned": false,
+        "simulation_only": true
+      }
+    },
+    "safety_interlock": {
+      "properties": {
+        "value": "TRIPPED",
+        "risk_state": "UNKNOWN_DATA",
+        "trip_power": true,
+        "evacuation_advisory": true,
+        "ventilation_response": false,
+        "optimization_enabled": false,
+        "reason_codes": [
+          "SENSOR_STALE"
+        ],
+        "fan_requests": [],
+        "simulation_only": true,
+        "equipment_io": false
+      }
+    }
+  }
+}
