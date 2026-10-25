@@ -42,7 +42,7 @@ function Frame({children,className=''}){return <section className={`mxf-frame ${
 function FrameTitle({children,aside,iconName}){return <div className="mxf-panel-title"><strong>{iconName&&icon(iconName,20)}{children}</strong><span>{aside}</span></div>}
 function Header({view,setView,data}){
  const [now,setNow]=useState(new Date());useEffect(()=>{const t=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(t)},[]);
- return <header className="mxf-header"><button type="button" className="mxf-brand" onClick={()=>setView('command')}><span className="mxf-logo">{icon('shield',37)}</span><span><b>MINEGUARD X</b><small>DIGITAL TWIN · REAL-TIME AIRFLOW &amp; HAZARD MONITOR</small></span><em>ULTRA<br/>3D</em></button>
+ return <header className="mxf-header"><button type="button" className="mxf-brand" onClick={()=>setView('command')}><span className="mxf-logo">{icon('shield',37)}</span><span><b>MINEGUARD X</b><small>DIGITAL TWIN · REAL-TIME AIRFLOW &amp; HAZARD MONITOR</small></span></button>
  <nav aria-label="MineGuard sections" className="mxf-navigation">{NAV.map(([id,label,i])=><button type="button" key={id} className={view===id?'mxf-active':''} onClick={()=>setView(id)}>{icon(i,18)}<span>{label}</span></button>)}</nav>
  <div className="mxf-header-status"><label className="mxf-live-badge">{data?'LIVE · DITTO':'BACKEND OFFLINE'}</label><strong className={data?'online':'offline'}>● {data?'SYSTEM ONLINE':'NO DATA'}</strong><time>{now.toLocaleTimeString('en-US')}</time></div></header>
 }

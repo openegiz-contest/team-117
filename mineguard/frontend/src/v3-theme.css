@@ -108,3 +108,6 @@ html[data-render-profile=software] .floating-label,html[data-render-profile=soft
 /* Pages taller than the window scroll; on short screens the Command Center rails scroll instead of clipping. */
 body{overflow-y:auto}
 @media(min-width:741px){.v3-command-workspace .rail{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#176c88 transparent}.v3-command-workspace .right-rail>.panel{flex-shrink:0}}
+/* Rajdhani is not bundled: map it to an installed sans face so rules without a fallback never render in a serif font. */
+@font-face{font-family:Rajdhani;font-weight:100 500;src:local("Rajdhani"),local("Rajdhani-Regular"),local("Inter Regular"),local("Inter-Regular"),local("Arial"),local("ArialMT"),local("Liberation Sans"),local("LiberationSans"),local("DejaVu Sans"),local("DejaVuSans"),local("Noto Sans"),local("NotoSans-Regular"),local("Helvetica")}
+@font-face{font-family:Rajdhani;font-weight:600 900;src:local("Rajdhani Bold"),local("Rajdhani-Bold"),local("Inter Bold"),local("Inter-Bold"),local("Arial Bold"),local("Arial-BoldMT"),local("Liberation Sans Bold"),local("LiberationSans-Bold"),local("DejaVu Sans Bold"),local("DejaVuSans-Bold"),local("Noto Sans Bold"),local("NotoSans-Bold"),local("Helvetica Bold")}

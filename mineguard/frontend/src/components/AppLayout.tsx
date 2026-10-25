@@ -33,7 +33,7 @@ export function AppLayout() {
   if (exactPatchRoute) return <Outlet />
   return <div className="app-shell v3-app-shell">
     <header className="header">
-      <NavLink to="/" className="brand" aria-label="Open MineGuard X Twin Inspector">
+      <NavLink to="/" className="brand" aria-label="MineGuard X Command Center">
         <div className="brand-shield"><ShieldHalf size={30} /></div>
         <div className="brand-words"><div className="brand-name">MINEGUARD <span>X</span></div><div className="brand-sub">DIGITAL TWIN · REAL-TIME AIRFLOW &amp; HAZARD MONITOR</div></div>
       </NavLink>

@@ -70,7 +70,6 @@ function LayoutHeader({onNavigate,data}){
   const [now,setNow]=useState(new Date());useEffect(()=>{const timer=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(timer)},[]);
   return <header className="evx-header evx-corners">
     <button className="evx-brand" onClick={()=>onNavigate('command')} aria-label="Go to command center"><span className="evx-brand-logo"><Icon name="shield" size={42}/></span><span className="evx-brand-words"><strong>MINEGUARD X</strong><small>DIGITAL TWIN · REAL-TIME AIRFLOW &amp;<br/>HAZARD MONITOR</small></span></button>
-    <span className="evx-ultra">ULTRA<br/>3D</span>
     <nav aria-label="Dashboard navigation" className="evx-nav">{NAV.map(([id,text,icon])=><button key={id} type="button" className={`evx-nav-button ${id==='evidence'?'evx-current':''}`} onClick={()=>onNavigate(id)}><Icon name={icon} size={22}/><span>{text}</span></button>)}</nav>
     <div className="evx-header-right"><span className={`evx-source-tag ${data?'evx-live':'evx-demo'}`}>{data?'LIVE · DITTO':'BACKEND OFFLINE'}</span><span className={`evx-connection ${data?'':'evx-bad'}`}>● {data?'SYSTEM ONLINE':'NO DATA'}</span><time>{nowTime(now)}</time></div>
   </header>
