@@ -25,7 +25,19 @@ as `UNKNOWN_DATA` (purple). Stale data is never drawn as safe.
 | Airflow particles and arrows | intake airflow (m³/s) | speed proportional to flow; they stop when flow is zero (main-fan failure) |
 | Fan rotor | main fan `rpm` | rotation proportional to actual RPM; the rim turns red when the fan is FAULTED |
 | Rails and rail cards | Ditto state | RPM, intake flow, every zone's CH₄ and risk, selected zone's CH₄/CO/airflow |
+| Face work lamps | cutting machine `state` | amber while the machine runs, red when the simulated trip stops it |
 | Emergency dialog | `safety_interlock` | simulated power isolation and evacuation advisory; must be acknowledged |
+
+## Ventilation network plan view
+
+An SVG plan view in the lower-left of the Command Center draws the real
+topology (zone coordinates from `mine_topology.json`) with directed airways
+E01–E06. Line width and labels show each airway's live Ditto flow (m³/s). A
+restricted airway is dashed amber with its resistance multiplier, zero flow is
+dashed grey, zone rings take the risk colour, nodes are selectable, and the
+main/aux fan RPM and cutting-machine state are shown at their zones. It costs
+almost nothing to render, so it stays fluid on CPU-only browsers. A missing
+airway reading is drawn as zero flow, never as the design value.
 
 Rocks, supports, conveyors, ducts and machines are illustrative procedural
 geometry. Zone anchor positions are chosen for readability; the authoritative

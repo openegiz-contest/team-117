@@ -13,6 +13,7 @@ export interface V3ZoneState {
 export interface V3SceneState {
   zones: V3ZoneState[]
   fan: { rpm: number; flow: number; faulted: boolean }
+  production?: { running: boolean }
 }
 
 export interface ProjectedPosition { x: number; y: number; visible: boolean }

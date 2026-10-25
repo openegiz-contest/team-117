@@ -13,7 +13,7 @@ Platform credentials exist only inside the backend container.
 | `GET /api/v1/state` | Latest state rebuilt from the Ditto readback (`publication_status: ECLIPSE_DITTO_READBACK`); 503 until the first readback |
 | `GET /api/v1/history` | Bounded history (240 samples) of Ditto readbacks |
 | `GET /api/v1/stream` | WebSocket: the current Ditto-readback state once per second |
-| `GET /api/v1/twins/{thing-id}` | Raw authenticated Ditto thing (only the nine managed IDs; others → 404) |
+| `GET /api/v1/twins/{thing-id}` | Raw authenticated Ditto thing (only the 16 managed IDs; others → 404) |
 | `GET /api/v1/vod/decision` | Constraint-first VOD decision with all candidates |
 | `GET /api/v1/decision-trace` | Risk assessments, safety decisions, VOD decision and constraints (evaluated on the controller's model state; includes `model_tick` and `platform_last_verified_tick`) |
 | `GET /api/v1/evidence` | Equations, units, limitations, decision trace and `validation` (live runtime checks) |
@@ -21,8 +21,10 @@ Platform credentials exist only inside the backend container.
 
 ## Simulation commands
 
-`POST /api/v1/scenarios/{S1_METHANE_LEAK|S2_MAIN_FAN_FAILURE}/start`,
-`POST /api/v1/scenarios/pause`, `/resume`, `/reset`.
+`POST /api/v1/scenarios/{S1_METHANE_LEAK|S2_MAIN_FAN_FAILURE|S3_AIRWAY_OBSTRUCTION|S4_SENSOR_LOSS}/start`,
+`POST /api/v1/scenarios/pause`, `/resume`, `/reset`, and
+`POST /api/v1/vod/apply` (commands the current VOD selection in the model;
+409 when the optimizer is blocked or nothing is selected).
 
 They require the header `X-MineGuard-Simulation: SIMULATION_ONLY`. A browser
 Origin must match the configured localhost allowlist. They change only the
@@ -35,7 +37,9 @@ simulation, never equipment.
 
 - `zones[]`: `methane_fraction` (volume fraction 0–1), `co_ppm`
 - `airways[]`: `flow_m3s`
-- `fans[]`: requested/actual speed fraction, `actual_speed_rpm`, `faulted`, `power_kw`
+- `fans[]`: requested (commanded) and actual speed fraction, `actual_speed_rpm`, `faulted`, `power_kw`
+- `airways[]` also carry `resistance_factor` (1 = open; S3 raises it)
+- `production`: the cutting machine's `running`, `power_kw`, `cutting_methane_m3s`, `equipment_co_m3s`
 - `risks[]`: state, reason codes, quality, methane, CO, airflow
 - `safety[]`: simulated production stop, evacuation advisory, ventilation
   response, optimization flag, fan requests with `PENDING` / `ACHIEVED` /

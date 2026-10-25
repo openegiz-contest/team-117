@@ -27,6 +27,8 @@ def validate_parameters(topology: Topology, parameters: Parameters) -> Parameter
     fan_ids = [item.fan_id for item in parameters.initial_fans]
     if len(fan_ids) != len(set(fan_ids)) or set(fan_ids) != {fan.id for fan in topology.fans}:
         raise ValueError("Initial fan settings must cover each fan exactly once")
+    if parameters.production.zone_id not in set(ids):
+        raise ValueError("Production equipment must be located in a configured zone")
     return parameters
 
 

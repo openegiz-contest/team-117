@@ -81,6 +81,11 @@ try {
   await api('/v1/scenarios/S1_METHANE_LEAK/start', 'POST')
   for (const [index, risk] of ['ADVISORY', 'WARNING', 'EMERGENCY'].entries()) {
     await until(risk, async () => { const s = await api('/v1/state'); return s.risks.find((z) => z.zone_id === 'Z04')?.state === risk && s })
+    if (risk === 'EMERGENCY') {
+      // Fans ramp at the drive limit; wait until Ditto reads back the achieved emergency response.
+      report.emergency_first_seen = await api('/v1/state').then((s) => ({ tick: s.tick, fans: s.fans.map((f) => [f.fan_id, f.actual_speed_fraction]) }))
+      await until('achieved emergency fan response', async () => { const s = await api('/v1/state'); return s.safety.find((d) => d.zone_id === 'Z04')?.fan_requests.every((r) => r.status === 'ACHIEVED') && s })
+    }
     await api('/v1/scenarios/pause', 'POST')
     // State is Ditto readback: wait until the paused model state has been published and read back.
     const frozen = await until('paused readback', async () => { const s = await api('/v1/state'); return s.paused && s })
@@ -123,6 +128,32 @@ try {
   await until('Ditto fan failure', async () => { const r = await api('/health/ready'); return r.platform_connected && r.platform_last_verified_tick >= failed.tick })
   await writeFile(resolve(output, '08-ditto-fan-failure.json'), JSON.stringify(await api('/v1/twins/mineguard%3Afan-main'), null, 2) + '\n')
   report.fan_failure_verified = true
+  const acknowledge = async () => {
+    await until('incident dialog', () => evaluate("!!document.querySelector('.incident-buttons')"), 30000).catch(() => undefined)
+    await evaluate("document.querySelector('.incident-buttons button.secondary')?.click()")
+  }
+  // S3: roof fall on E03 — flow redistributes and the face loses dilution air.
+  await api('/v1/scenarios/reset', 'POST')
+  await api('/v1/scenarios/S3_AIRWAY_OBSTRUCTION/start', 'POST')
+  const blocked = await until('S3 obstruction readback', async () => { const s = await api('/v1/state'); const e03 = s.airways.find((a) => a.airway_id === 'E03'); return e03?.resistance_factor > 1 && s.risks.find((z) => z.zone_id === 'Z04')?.state === 'WARNING' && s })
+  await new Promise((done) => setTimeout(done, 4000))
+  await api('/v1/scenarios/pause', 'POST')
+  await acknowledge()
+  const s3 = await until('paused readback', async () => { const s = await api('/v1/state'); return s.paused && s })
+  assert.equal(s3.production.running, false, 'Cutting machine did not trip in S3')
+  await capture('10-airway-obstruction', s3)
+  await writeFile(resolve(output, '10-ditto-airway-e03.json'), JSON.stringify(await api('/v1/twins/mineguard%3Aairway-e03'), null, 2) + '\n')
+  report.airway_obstruction = { tick: blocked.tick, airways: Object.fromEntries(s3.airways.map((a) => [a.airway_id, [a.flow_m3s, a.resistance_factor]])) }
+  // S4: Z04 sensors silent — the zone must become UNKNOWN_DATA, never safe.
+  await api('/v1/scenarios/reset', 'POST')
+  await api('/v1/scenarios/S4_SENSOR_LOSS/start', 'POST')
+  await until('S4 sensor loss readback', async () => { const s = await api('/v1/state'); const z = s.risks.find((r) => r.zone_id === 'Z04'); return z?.state === 'UNKNOWN_DATA' && z.quality === 'STALE' && s })
+  await api('/v1/scenarios/pause', 'POST')
+  await acknowledge()
+  const s4 = await until('paused readback', async () => { const s = await api('/v1/state'); return s.paused && s })
+  await capture('11-sensor-loss', s4)
+  await writeFile(resolve(output, '11-ditto-zone-z04.json'), JSON.stringify(await api('/v1/twins/mineguard%3Azone-z04'), null, 2) + '\n')
+  report.sensor_loss_verified = true
 } finally {
   await api('/v1/scenarios/reset', 'POST')
   // Ditto is republished every second, so a reset shows as a verified tick restarting near zero.

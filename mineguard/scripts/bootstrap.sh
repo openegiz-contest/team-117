@@ -25,8 +25,9 @@ if [[ -f deploy/compose/.example-mine ]]; then
   compose_files+=(-f examples/mine/compose.yml)
 fi
 compose_files+=(-f mineguard/deploy/compose.mineguard.yml)
+# grafana is listed so the overlay's MineGuard dashboard mount is applied.
 docker compose "${compose_files[@]}" up -d --build --wait --wait-timeout 600 \
-  mineguard-backend mineguard-ui
+  mineguard-backend mineguard-ui grafana
 
 port="${MINEGUARD_PORT:-8091}"
 base="http://127.0.0.1:${port}"

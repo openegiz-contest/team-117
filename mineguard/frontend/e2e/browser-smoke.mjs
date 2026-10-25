@@ -105,7 +105,7 @@ try {
     await waitFor("document.querySelector('.mxf-header, .evx-header') !== null")
     if (path === '/energy') await waitFor("document.querySelectorAll('.mxf-candidate-table tbody tr').length > 0")
     if (path === '/twins') {
-      await waitFor("document.querySelectorAll('.mxf-entity').length === 9 && document.querySelector('.mxf-live-badge')?.textContent.includes('LIVE · DITTO') && document.querySelector('.mxf-detail-heading')?.textContent.includes('ECLIPSE DITTO RESPONSE')")
+      await waitFor("document.querySelectorAll('.mxf-entity').length === 16 && document.querySelector('.mxf-live-badge')?.textContent.includes('LIVE · DITTO') && document.querySelector('.mxf-detail-heading')?.textContent.includes('ECLIPSE DITTO RESPONSE')")
       await evaluate("document.querySelectorAll('.mxf-entity')[1].click()")
       await waitFor("document.querySelector('.mxf-detail-heading')?.textContent.includes('mineguard:zone-z01') && document.querySelector('.mxf-detail-heading')?.textContent.includes('ECLIPSE DITTO RESPONSE')")
       await evaluate("document.querySelectorAll('.mxf-entity')[0].click()")

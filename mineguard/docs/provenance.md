@@ -20,10 +20,14 @@ twins carry it as an attribute, and every published value carries
 | Auxiliary fan | 22 kW, 1,450 rpm, 180 Pa shut-off, K = 0.7 | heading booster on a 4-pole 50 Hz motor (≈1500 rpm synchronous) |
 | Initial fan speeds | main 75 %, auxiliary 50 % | gives ≈39.6 m³/s section airflow, ≈3 m/s in a 12–15 m² roadway |
 | Inlet air | 0.002 % CH₄, 2 ppm CO | clean intake air |
-| Methane sources | Z03 0.008, Z04 0.040, Z05 0.002 m³/s | baseline face methane ≈ 0.04 / 24.7 ≈ 0.16 % |
-| CO sources | Z03 0.00005, Z04 0.00012 m³/s | equipment exhaust at the working places |
+| Methane sources | Z03 0.008, Z04 0.015 strata + 0.025 cutting, Z05 0.002 m³/s | baseline face methane ≈ 0.04 / 24.7 ≈ 0.16 %; the cutting share stops when the machine trips |
+| CO sources | Z03 0.00005, Z04 0.00002 + 0.0001 from the cutting machine m³/s | equipment exhaust at the working places |
+| Cutting machine | 600 kW operating power while running | fictional load, sized like a mid-range longwall shearer |
+| Fan drive ramp | 5 % of rated speed per second | variable-speed-drive acceleration limit; design assumption |
 | S1 release | Z04 0.8 m³/s for 180 s | sudden release that crosses all methane tiers in under a minute |
 | S2 failure | main fan faulted at 10 s for 90 s | loss of main ventilation |
+| S3 obstruction | E03 resistance × 250 at 10 s for 240 s | roof fall cutting face intake flow below the 5 m³/s constraint (24.7 → 3.9 m³/s) |
+| S4 sensor loss | Z04 CH₄/CO sensors silent at 10 s for 90 s | communication-loss case for the stale-data rule |
 | VOD | candidate speeds 40–100 %, ±20 % step, 60 s horizon, 0.05 kWh switching penalty per unit change | demonstration controller settings |
 | Physics tick | 0.5 s, CFL bound 0.5 | numerical stability; residual is reported |
 

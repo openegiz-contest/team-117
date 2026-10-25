@@ -14,5 +14,22 @@
     "duration_seconds": 90.0,
     "fan_failure_id": "FAN_MAIN",
     "fan_failure_at_seconds": 10.0
+  },
+  {
+    "id": "S3_AIRWAY_OBSTRUCTION",
+    "name": "Face intake airway roof fall",
+    "description": "At ten seconds a simulated roof fall multiplies the resistance of airway E03 (Z02 to the Z04 face) by 250; airflow redistributes to the heading branch and the face loses dilution air.",
+    "duration_seconds": 240.0,
+    "obstruction_airway_id": "E03",
+    "obstruction_factor": 250.0,
+    "obstruction_at_seconds": 10.0
+  },
+  {
+    "id": "S4_SENSOR_LOSS",
+    "name": "Production-face gas sensor communication loss",
+    "description": "At ten seconds the Z04 methane and CO sensors stop reporting; the zone keeps its last reading marked stale and must be treated as unknown, never as safe.",
+    "duration_seconds": 90.0,
+    "sensor_failure_zone_id": "Z04",
+    "sensor_failure_at_seconds": 10.0
   }
 ]

@@ -4,6 +4,7 @@ interface FinalThreePagesProps {
   view: 'twin' | 'scenario' | 'energy'
   setView: (view: 'twin' | 'command' | 'scenario' | 'energy' | 'evidence') => void
   data: unknown
+  scenarios?: unknown[]
   error: string | null
   pending: boolean
   startScenario: (id: string) => Promise<unknown>

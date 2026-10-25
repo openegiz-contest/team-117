@@ -52,6 +52,25 @@ class ScenarioEngine:
         ):
             self.simulation.set_fan(self._active.fan_failure_id, faulted=True)
             self._actions.append("FAN_FAILURE_APPLIED")
+        if (
+            self._active.obstruction_airway_id
+            and self._active.obstruction_factor is not None
+            and self._active.obstruction_at_seconds is not None
+            and elapsed >= self._active.obstruction_at_seconds
+            and "AIRWAY_OBSTRUCTION_APPLIED" not in self._actions
+        ):
+            self.simulation.set_obstruction(
+                self._active.obstruction_airway_id, self._active.obstruction_factor
+            )
+            self._actions.append("AIRWAY_OBSTRUCTION_APPLIED")
+        if (
+            self._active.sensor_failure_zone_id
+            and self._active.sensor_failure_at_seconds is not None
+            and elapsed >= self._active.sensor_failure_at_seconds
+            and "SENSOR_FAILURE_APPLIED" not in self._actions
+        ):
+            self.simulation.set_sensor_offline(self._active.sensor_failure_zone_id, True)
+            self._actions.append("SENSOR_FAILURE_APPLIED")
         if elapsed >= self._active.duration_seconds:
             self._restore_actions()
             self._status = ScenarioRunStatus.COMPLETED
@@ -89,3 +108,7 @@ class ScenarioEngine:
             self.simulation.set_methane_source(self._active.methane_source_zone_id, initial)
         if self._active.fan_failure_id:
             self.simulation.set_fan(self._active.fan_failure_id, faulted=False)
+        if self._active.obstruction_airway_id:
+            self.simulation.set_obstruction(self._active.obstruction_airway_id, None)
+        if self._active.sensor_failure_zone_id:
+            self.simulation.set_sensor_offline(self._active.sensor_failure_zone_id, False)

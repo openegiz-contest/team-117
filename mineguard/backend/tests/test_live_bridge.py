@@ -38,7 +38,7 @@ class FakePlatform:
 
 
 def _bridge(
-    topology: Topology, monkeypatch: pytest.MonkeyPatch
+    topology: Topology, parameters: Parameters, monkeypatch: pytest.MonkeyPatch
 ) -> tuple[LivePlatformBridge, FakePlatform]:
     fake = FakePlatform()
     monkeypatch.setattr("app.integrations.live.DittoClient", lambda *a, **k: fake)
@@ -50,6 +50,7 @@ def _bridge(
         "test",
         "localhost",
         1883,
+        production=parameters.production,
         verification_timeout_seconds=0.02,
     )
     bridge._bootstrapped = True
@@ -59,29 +60,29 @@ def _bridge(
 def test_all_managed_twins_require_matching_readback(
     topology: Topology, parameters: Parameters, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    bridge, fake = _bridge(topology, monkeypatch)
+    bridge, fake = _bridge(topology, parameters, monkeypatch)
     snapshot = Simulation(topology, parameters).snapshot()
     readback = bridge.publish(snapshot)
     assert readback.publication_status == "ECLIPSE_DITTO_READBACK"
     assert readback.tick == snapshot.tick
-    assert len(fake.read_ids) == 9
+    assert len(fake.read_ids) == 16
     assert fake.read_ids == set(fake.messages)
 
 
 def test_mqtt_acknowledged_but_one_missing_twin_fails_verification(
     topology: Topology, parameters: Parameters, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    bridge, fake = _bridge(topology, monkeypatch)
+    bridge, fake = _bridge(topology, parameters, monkeypatch)
     fake.exclude = "mineguard:zone-z04"
     with pytest.raises(TimeoutError, match="not verified"):
         bridge.publish(Simulation(topology, parameters).snapshot())
-    assert len(fake.messages) == 9
+    assert len(fake.messages) == 16
 
 
 def test_reset_same_tick_cannot_reuse_previous_publication_readback(
     topology: Topology, parameters: Parameters, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    bridge, fake = _bridge(topology, monkeypatch)
+    bridge, fake = _bridge(topology, parameters, monkeypatch)
     snapshot = Simulation(topology, parameters).snapshot()
     assert bridge.publish(snapshot).tick == snapshot.tick
     fake.propagate = False

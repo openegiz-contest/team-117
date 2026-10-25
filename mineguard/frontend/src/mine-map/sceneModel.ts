@@ -24,6 +24,8 @@ export interface SceneAirway {
   source: Vector3Tuple
   target: Vector3Tuple
   flowM3s: number
+  /** Simulated obstruction: multiplier on nominal airway resistance (1 = open). */
+  resistanceFactor: number
 }
 
 export interface SceneFan {
@@ -35,10 +37,18 @@ export interface SceneFan {
   faulted: boolean
 }
 
+export interface SceneProduction {
+  id: string
+  zoneId: string
+  running: boolean
+  powerKw: number
+}
+
 export interface MineSceneModel {
   zones: SceneZone[]
   airways: SceneAirway[]
   fans: SceneFan[]
+  production?: SceneProduction
 }
 
 export const RISK_COLOURS: Record<RiskState, string> = {
@@ -96,7 +106,7 @@ export function buildMineScene(topology: Topology, snapshot: Snapshot, stale = f
     }
   })
   const positions = new Map(zones.map((zone) => [zone.id, zone.position]))
-  const liveFlows = new Map(snapshot.airways.map((item) => [item.airway_id, item.flow_m3s]))
+  const liveAirways = new Map(snapshot.airways.map((item) => [item.airway_id, item]))
 
   const airways = topology.airways.flatMap<SceneAirway>((airway) => {
     const source = positions.get(airway.from)
@@ -108,7 +118,9 @@ export function buildMineScene(topology: Topology, snapshot: Snapshot, stale = f
       targetZoneId: airway.to,
       source,
       target,
-      flowM3s: liveFlows.get(airway.id) ?? airway.flow_m3s,
+      // A missing live reading is shown as no flow, never as the design value.
+      flowM3s: liveAirways.get(airway.id)?.flow_m3s ?? 0,
+      resistanceFactor: liveAirways.get(airway.id)?.resistance_factor ?? 1,
     }]
   })
   const fanConfig = new Map(topology.fans.map((fan) => [fan.id, fan]))
@@ -125,5 +137,9 @@ export function buildMineScene(topology: Topology, snapshot: Snapshot, stale = f
       faulted: fan.faulted,
     }]
   })
-  return { zones, airways, fans }
+  const live = snapshot.production
+  const production = live
+    ? { id: live.equipment_id, zoneId: live.zone_id, running: live.running && !stale, powerKw: live.power_kw }
+    : undefined
+  return { zones, airways, fans, production }
 }

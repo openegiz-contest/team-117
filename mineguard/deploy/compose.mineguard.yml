@@ -32,6 +32,11 @@ services:
         max-size: 10m
         max-file: "3"
 
+  # Adds the MineGuard history dashboard to the official Grafana (folder "OpenEgiz Examples").
+  grafana:
+    volumes:
+      - ../../mineguard/grafana/mineguard-dashboard.json:/var/lib/grafana/example-dashboards/mineguard-x.json:ro
+
   mineguard-ui:
     build:
       context: ../../mineguard/frontend

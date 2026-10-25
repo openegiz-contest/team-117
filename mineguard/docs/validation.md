@@ -11,9 +11,9 @@ real-mine accuracy.
 |---|---|
 | Ruff lint and format check (backend) | pass |
 | Strict mypy, 25 source files | pass |
-| pytest | **198 passed** |
+| pytest | **211 passed** |
 | TypeScript, ESLint (frontend) | pass |
-| Vitest | **31 passed** (8 files) |
+| Vitest | **36 passed** |
 | Vite production build | pass |
 
 Backend tests cover topology validation, unit conversions, gas-balance
@@ -31,7 +31,22 @@ the API command guard, and the WebSocket/readiness behaviour.
 | `bash mineguard/scripts/full-smoke.sh` | official `make smoke` (MQTT → Ditto → Telegraf → InfluxDB → Grafana); WebSocket frames are `ECLIPSE_DITTO_READBACK` with an advancing tick; CO ppm, fan RPM and the simulation-only interlock read back from Ditto | pass |
 | `bash mineguard/scripts/scenario-smoke.sh` | S1 drives Z04 to EMERGENCY (1.52 % CH₄, tick 86); the Ditto twin shows `trip_power`, evacuation and ventilation response with `equipment_io: false`; reset returns the Ditto readback to tick 0 with interlocks cleared | pass |
 
-## Clean-clone rehearsal
+## Fresh-volume rehearsal of this version (16 twins)
+
+The working tree of this commit (airway and cutting-machine twins, S3/S4,
+production interlock, fan drive ramp, Apply VOD, Grafana dashboard) was copied
+to a separate directory and started as an isolated Compose project with new
+data volumes, new credentials and the MineGuard images rebuilt from source:
+
+| Step | Result |
+|---|---|
+| `bash mineguard/scripts/bootstrap.sh` | exit 0 in 506 s (includes rebuilding both MineGuard images) |
+| `bash mineguard/scripts/full-smoke.sh` | pass (official smoke + MineGuard checks) |
+| `bash mineguard/scripts/scenario-smoke.sh` | pass: S1 Z04 EMERGENCY at tick 89 (1.58 % CH₄) with the Ditto interlock verified; S3 E03 3.9 m³/s, E02 25.2 m³/s, Z04 WARNING; S4 Z04 UNKNOWN_DATA with quality STALE; reset to the baseline |
+| second `bootstrap.sh` on the running stack | exit 0 |
+| MineGuard Grafana dashboard | provisioned under OpenEgiz Examples; all 10 data panels returned data for a 5-minute window in 0.3–2.3 s |
+
+## Earlier clean-clone rehearsal (previous version)
 
 Fresh `git clone` of `openegiz-contest/team-117` at commit `8ccd6a3`, run with
 an isolated Compose project (new data volumes, newly generated credentials, no
@@ -61,13 +76,18 @@ Checks executed by the running service, shown on the Evidence page:
 | Residual bounds | max abs gas-balance residual 2.2e-15 m³ (limit 1e-9) |
 | Scenario repeatability | two seeded S1 runs identical after 120 ticks; reset reproduces the tick-0 baseline exactly |
 | Telemetry freshness | Ditto readback verified within the 1 s publication cycle |
-| Source traceability | UI state rebuilt from nine Ditto twins sharing one publication run ID |
+| Source traceability | UI state rebuilt from all managed Ditto twins (16 in this version) sharing one publication run ID |
 
 ## Browser evidence (headless Chrome, SwiftShader CPU WebGL)
 
+These screenshots and stage values were captured on the previous version
+(commit `41f6762`), before the airway and cutting-machine twins were added. They have not yet been re-captured for the
+16-twin version; the e2e scripts in this commit already expect 16 twins and
+add S3/S4 captures.
+
 `frontend/e2e/browser-smoke.mjs` → `docs/final-browser/`: all five routes at
 1680×1080 and 390 px mobile width, six zones selectable, sensor toggle, stable
-camera, Twin Inspector showing nine authenticated Ditto responses, no
+camera, Twin Inspector showing 15 authenticated Ditto responses, no
 horizontal overflow, no browser exception.
 
 `frontend/e2e/scenario-evidence.mjs` → `docs/final-scenario-evidence/`:

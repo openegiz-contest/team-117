@@ -3,10 +3,17 @@
 from collections.abc import Mapping
 from typing import Any
 
-from app.integrations.bootstrap_twins import fan_thing_id, zone_thing_id
+from app.integrations.bootstrap_twins import (
+    airway_thing_id,
+    equipment_thing_id,
+    fan_thing_id,
+    zone_thing_id,
+)
 from app.models import (
     AirwayFlow,
     FanState,
+    ProductionParameters,
+    ProductionState,
     RiskAssessment,
     RiskState,
     SimulatedFanRequest,
@@ -50,15 +57,37 @@ def _flag(properties: Mapping[str, Any], key: str) -> bool:
     return value
 
 
+def _production_from_thing(
+    thing: Mapping[str, Any], production: ProductionParameters
+) -> ProductionState:
+    state = _properties(thing, "state").get("value")
+    if state not in {"RUNNING", "TRIPPED"}:
+        raise ValueError("Ditto equipment state is not RUNNING or TRIPPED")
+    return ProductionState(
+        equipment_id=production.equipment_id,
+        zone_id=production.zone_id,
+        running=state == "RUNNING",
+        power_kw=_number(_properties(thing, "power")),
+        cutting_methane_m3s=_number(_properties(thing, "cutting_methane")),
+        equipment_co_m3s=_number(_properties(thing, "exhaust_co")),
+    )
+
+
 def snapshot_from_things(
-    topology: Topology, things: Mapping[str, Mapping[str, Any]], run_id: str
+    topology: Topology,
+    things: Mapping[str, Mapping[str, Any]],
+    run_id: str,
+    production: ProductionParameters | None = None,
 ) -> SimulationSnapshot:
-    """Validate one consistent publication across all nine twins and convert units once."""
+    """Validate one consistent publication across all managed twins; convert units once."""
     expected = {
         topology.mine_id,
         *(zone_thing_id(zone.id) for zone in topology.zones),
         *(fan_thing_id(fan.id) for fan in topology.fans),
+        *(airway_thing_id(airway.id) for airway in topology.airways),
     }
+    if production is not None:
+        expected.add(equipment_thing_id(production.equipment_id))
     if set(things) != expected:
         raise ValueError("Ditto readback must contain exactly the managed twins")
     ticks = set()
@@ -119,7 +148,10 @@ def snapshot_from_things(
     airways = tuple(
         AirwayFlow(
             airway_id=airway.id,
-            flow_m3s=_number(_properties(mine, f"airway_{airway.id.lower()}")),
+            flow_m3s=_number(_properties(things[airway_thing_id(airway.id)], "flow")),
+            resistance_factor=_number(
+                _properties(things[airway_thing_id(airway.id)], "obstruction")
+            ),
         )
         for airway in sorted(topology.airways, key=lambda item: item.id)
     )
@@ -151,4 +183,9 @@ def snapshot_from_things(
         fans=tuple(fans),
         risks=tuple(risks),
         safety=tuple(safety),
+        production=(
+            _production_from_thing(things[equipment_thing_id(production.equipment_id)], production)
+            if production is not None
+            else None
+        ),
     )

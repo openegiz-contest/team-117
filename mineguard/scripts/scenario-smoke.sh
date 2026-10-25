@@ -116,5 +116,56 @@ def reset_observation() -> dict:
 
 reset = wait_until("deterministic reset Ditto readback", reset_observation)
 print(json.dumps({"reset": reset}, sort_keys=True))
-print("MineGuard S1 live scenario smoke passed: emergency interlock, Ditto readback, and reset")
+
+
+def twin(thing: str) -> dict:
+    return request("/v1/twins/" + urllib.parse.quote(thing, safe=""))
+
+
+# S3: the roof fall must reach Ditto as a restricted airway with redistributed flow.
+request("/v1/scenarios/S3_AIRWAY_OBSTRUCTION/start", method="POST")
+try:
+    def obstruction_observation() -> dict:
+        e02 = twin("mineguard:airway-e02")["features"]
+        e03 = twin("mineguard:airway-e03")["features"]
+        face = twin("mineguard:zone-z04")["features"]["risk"]["properties"]
+        return {
+            "passed": (
+                e03["obstruction"]["properties"]["status"] == "RESTRICTED"
+                and e03["flow"]["properties"]["value"] < 5
+                and e02["flow"]["properties"]["value"] > 20
+                and face["value"] == "WARNING"
+                and "DILUTION_AIRFLOW_LOW" in face["reason_codes"]
+            ),
+            "e03_flow": e03["flow"]["properties"]["value"],
+            "e02_flow": e02["flow"]["properties"]["value"],
+            "z04_risk": face["value"],
+        }
+
+    print(json.dumps({"s3": wait_until("S3 obstruction in Ditto", obstruction_observation)}))
+finally:
+    request("/v1/scenarios/reset", method="POST")
+
+# S4: a silent sensor must reach Ditto as STALE and UNKNOWN_DATA, never as a safe reading.
+request("/v1/scenarios/S4_SENSOR_LOSS/start", method="POST")
+try:
+    def sensor_observation() -> dict:
+        features = twin("mineguard:zone-z04")["features"]
+        risk = features["risk"]["properties"]
+        return {
+            "passed": (
+                risk["value"] == "UNKNOWN_DATA"
+                and risk["quality"] == "STALE"
+                and features["methane"]["properties"]["quality"] == "STALE"
+                and features["safety_interlock"]["properties"]["trip_power"] is True
+            ),
+            "z04_risk": risk["value"],
+            "quality": risk["quality"],
+        }
+
+    print(json.dumps({"s4": wait_until("S4 sensor loss in Ditto", sensor_observation)}))
+finally:
+    request("/v1/scenarios/reset", method="POST")
+wait_until("reset after S3/S4", reset_observation)
+print("MineGuard live scenario smoke passed: S1 emergency interlock, S3 obstruction, S4 sensor loss, Ditto readback, and reset")
 PY

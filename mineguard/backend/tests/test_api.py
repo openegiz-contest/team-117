@@ -166,6 +166,42 @@ def test_scenario_commands_reject_untrusted_browser_origin(
         )
 
 
+def test_vod_recommendation_can_be_applied_only_with_the_simulation_guard(
+    topology: Topology, parameters: Parameters
+) -> None:
+    service = _service(topology, parameters)
+    with TestClient(create_app(service)) as client:
+        assert client.post("/api/v1/vod/apply").status_code == 403
+        applied = client.post(
+            "/api/v1/vod/apply", headers={"X-MineGuard-Simulation": "SIMULATION_ONLY"}
+        )
+        assert applied.status_code == 200
+        assert applied.json()["command_status"] == "APPLIED"
+        selected = {
+            item["fan_id"]: item["speed_fraction"]
+            for item in applied.json()["selected"]["fan_speeds"]
+        }
+        requested = {fan.fan_id: fan.requested_speed_fraction for fan in service.snapshot().fans}
+        assert requested == selected
+
+
+def test_vod_apply_is_refused_while_safety_blocks_optimization(
+    topology: Topology, parameters: Parameters
+) -> None:
+    service = _service(topology, parameters)
+    with TestClient(create_app(service)) as client:
+        client.post(
+            "/api/v1/scenarios/S4_SENSOR_LOSS/start",
+            headers={"X-MineGuard-Simulation": "SIMULATION_ONLY"},
+        )
+        service._simulation.set_sensor_offline("Z04", True)
+        refused = client.post(
+            "/api/v1/vod/apply", headers={"X-MineGuard-Simulation": "SIMULATION_ONLY"}
+        )
+        assert refused.status_code == 409
+        assert "DISABLED_BY_SAFETY" in refused.json()["detail"]
+
+
 def test_decision_trace_is_internally_consistent(
     topology: Topology, parameters: Parameters
 ) -> None:

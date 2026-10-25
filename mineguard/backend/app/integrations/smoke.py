@@ -66,7 +66,7 @@ def run_smoke(
 ) -> dict[str, object]:
     topology = simulation.topology
     ditto = DittoClient(config.ditto_url, config.ditto_user, config.ditto_password)
-    bootstrap: BootstrapResult = bootstrap_twins(ditto, topology)
+    bootstrap: BootstrapResult = bootstrap_twins(ditto, topology, simulation.parameters.production)
     for _ in range(20):
         simulation.tick()
     snapshot = simulation.snapshot()

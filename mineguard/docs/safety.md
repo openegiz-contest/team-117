@@ -56,3 +56,24 @@ the versioned baseline. VOD application recomputes and compares the current
 proposal, rejecting stale or safety-blocked requests before changing model state.
 Five regression tests cover feedback, flow response, failed-fan exclusion,
 pause/reset, live-worker integration and stale-proposal precedence.
+
+## Production interlock and fan drive ramp
+
+The Z04 cutting machine (`mineguard:shearer-z04`) runs while its zone has no
+simulated production stop. When `trip_power` is set (WARNING, EMERGENCY or
+UNKNOWN_DATA in Z04, or a failed main fan), the machine stops: its 600 kW load
+drops to 0, and its cutting methane (0.025 m³/s) and exhaust CO (0.0001 m³/s)
+leave the Z04 mass balance on the next tick. It restarts when the zone no
+longer requires a stop. The trip therefore changes the physics, not only a flag.
+
+Fan commands — EMERGENCY requests from the safety state machine and an applied
+VOD recommendation — set the *requested* speed. The actual speed follows it at
+5 % of rated speed per second, a variable-speed-drive acceleration limit used
+as a design assumption. Feedback stays `PENDING` until the actual speed equals
+the request, then reads `ACHIEVED`. A failed fan stays `EXCLUDED_FAULTED` at
+0 rpm. Ditto shows both `requested_speed` and `speed` for every fan.
+
+| Scenario | Safety consequence |
+|---|---|
+| S3 airway roof fall | Z04 airflow below 5 m³/s → WARNING (`DILUTION_AIRFLOW_LOW`) → cutting machine tripped |
+| S4 sensor loss | Z04 gas readings STALE → UNKNOWN_DATA → production stop and evacuation advisory, optimizer disabled |

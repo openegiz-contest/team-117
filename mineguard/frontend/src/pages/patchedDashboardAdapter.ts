@@ -22,6 +22,8 @@ export interface PatchedDashboardData {
   }>
   fan: { id: string; rpm: number; flow: number; override: number; healthy: boolean }
   fans: Array<{ id: string; rpm: number; flow: number; override: number; healthy: boolean }>
+  airways: Array<{ id: string; from: string; to: string; flow: number; resistanceFactor: number }>
+  production: { id: string; zone: string; running: boolean; powerKw: number } | null
   atmosphere: { co: number; pressure: null; oxygen: null; temperature: null }
   energy: { baseline: number | null; optimized: number | null; savedPercent: number | null; unit: string }
   events: Array<{ type: string; description: string; at: null }>
@@ -106,6 +108,13 @@ export function toPatchedDashboardData(
       override: fan.actual_speed_fraction * 100,
       healthy: !fan.faulted,
     })),
+    airways: topology.airways.map((airway) => {
+      const live = snapshot.airways.find((item) => item.airway_id === airway.id)
+      return { id: airway.id, from: airway.from, to: airway.to, flow: live?.flow_m3s ?? 0, resistanceFactor: live?.resistance_factor ?? 1 }
+    }),
+    production: snapshot.production
+      ? { id: snapshot.production.equipment_id, zone: snapshot.production.zone_id, running: snapshot.production.running, powerKw: snapshot.production.power_kw }
+      : null,
     atmosphere: {
       co: Math.max(0, ...snapshot.risks.map((item) => item.co_ppm)),
       pressure: null,

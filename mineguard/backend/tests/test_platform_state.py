@@ -37,8 +37,11 @@ def test_ditto_readback_reproduces_the_published_snapshot(
     topology: Topology, parameters: Parameters
 ) -> None:
     snapshot = _hazardous(topology, parameters)
-    rebuilt = snapshot_from_things(topology, _things(snapshot, topology, "live-x-1"), "live-x-1")
+    rebuilt = snapshot_from_things(
+        topology, _things(snapshot, topology, "live-x-1"), "live-x-1", parameters.production
+    )
     assert rebuilt.publication_status == "ECLIPSE_DITTO_READBACK"
+    assert rebuilt.production == snapshot.production
     assert (rebuilt.tick, rebuilt.paused) == (snapshot.tick, snapshot.paused)
     for original, copy in zip(snapshot.zones, rebuilt.zones, strict=True):
         assert copy.zone_id == original.zone_id
@@ -64,11 +67,11 @@ def test_mixed_or_incomplete_ditto_readback_is_rejected(
     stale = dict(things)
     stale["mineguard:zone-z04"] = _things(snapshot, topology, "live-x-1")["mineguard:zone-z04"]
     with pytest.raises(ValueError, match="mixes"):
-        snapshot_from_things(topology, stale, "live-x-2")
+        snapshot_from_things(topology, stale, "live-x-2", parameters.production)
     missing = dict(things)
     missing.pop("mineguard:fan-main")
     with pytest.raises(ValueError, match="exactly the managed twins"):
-        snapshot_from_things(topology, missing, "live-x-2")
+        snapshot_from_things(topology, missing, "live-x-2", parameters.production)
 
 
 def test_configured_platform_serves_only_ditto_readback(
@@ -83,6 +86,7 @@ def test_configured_platform_serves_only_ditto_readback(
             topology,
             _things(snapshot, topology, f"live-t-{len(published)}"),
             f"live-t-{len(published)}",
+            parameters.production,
         )
 
     service = RuntimeService(

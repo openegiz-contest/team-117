@@ -20,5 +20,6 @@ export function toV3SceneState(model: MineSceneModel): V3SceneState {
       flow: model.zones.find((zone) => zone.role === 'intake')?.airflowM3s ?? 0,
       faulted: mainFan?.faulted ?? true,
     },
+    production: model.production ? { running: model.production.running } : undefined,
   }
 }

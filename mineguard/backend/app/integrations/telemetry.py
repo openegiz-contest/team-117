@@ -3,7 +3,12 @@
 import re
 from math import fsum
 
-from app.integrations.bootstrap_twins import fan_thing_id, zone_thing_id
+from app.integrations.bootstrap_twins import (
+    airway_thing_id,
+    equipment_thing_id,
+    fan_thing_id,
+    zone_thing_id,
+)
 from app.models import SimulationSnapshot, Topology
 from app.units import fraction_to_percent
 
@@ -52,13 +57,13 @@ def zone_features(
         "methane": _feature(
             round(fraction_to_percent(methane[zone_id]), 8),
             unit="% volume",
-            quality="GOOD",
+            quality=risk.quality.value,
             source_type=snapshot.source_type,
         ),
         "co": _feature(
             round(co_ppm[zone_id], 8),
             unit="ppm",
-            quality="GOOD",
+            quality=risk.quality.value,
             source_type=snapshot.source_type,
         ),
         "airflow": _feature(
@@ -142,13 +147,8 @@ def mine_features(snapshot: SimulationSnapshot, run_id: str) -> dict[str, object
     max_co_ppm = max(item.co_ppm for item in snapshot.zones)
     total_power = fsum(item.power_kw for item in snapshot.fans)
     total_flow = next(item.flow_m3s for item in snapshot.airways if item.airway_id == "E01")
-    airways = {
-        f"airway_{item.airway_id.lower()}": _feature(round(item.flow_m3s, 8), unit="m3/s")
-        for item in snapshot.airways
-    }
     return {
         "idSimulationRun": _feature(run_id),
-        **airways,
         "max_methane": _feature(
             round(fraction_to_percent(max_methane), 8),
             unit="% volume",
@@ -170,11 +170,75 @@ def mine_features(snapshot: SimulationSnapshot, run_id: str) -> dict[str, object
     }
 
 
+def airway_features(snapshot: SimulationSnapshot, airway_id: str, run_id: str) -> dict[str, object]:
+    validate_run_id(run_id)
+    try:
+        airway = next(item for item in snapshot.airways if item.airway_id == airway_id)
+    except StopIteration as exc:
+        raise ValueError(f"Unknown snapshot airway: {airway_id}") from exc
+    return {
+        "idSimulationRun": _feature(run_id),
+        "flow": _feature(
+            round(airway.flow_m3s, 8),
+            unit="m3/s",
+            quality="GOOD",
+            source_type=snapshot.source_type,
+        ),
+        "obstruction": _feature(
+            round(airway.resistance_factor, 6),
+            unit="resistance multiplier",
+            status="OPEN" if airway.resistance_factor == 1.0 else "RESTRICTED",
+            simulation_only=True,
+        ),
+        "simulation": _feature(
+            True,
+            tick=snapshot.tick,
+            simulated_seconds=snapshot.simulated_seconds,
+        ),
+    }
+
+
+def equipment_features(snapshot: SimulationSnapshot, run_id: str) -> dict[str, object]:
+    validate_run_id(run_id)
+    production = snapshot.production
+    if production is None:
+        raise ValueError("Snapshot has no production equipment state")
+    return {
+        "idSimulationRun": _feature(run_id),
+        "state": _feature(
+            "RUNNING" if production.running else "TRIPPED",
+            interlock="safety_interlock.trip_power",
+            simulation_only=True,
+            equipment_io=False,
+        ),
+        "power": _feature(
+            round(production.power_kw, 6), unit="kW", source_type=snapshot.source_type
+        ),
+        "cutting_methane": _feature(round(production.cutting_methane_m3s, 8), unit="m3/s"),
+        "exhaust_co": _feature(round(production.equipment_co_m3s, 8), unit="m3/s"),
+        "simulation": _feature(
+            True,
+            tick=snapshot.tick,
+            simulated_seconds=snapshot.simulated_seconds,
+        ),
+    }
+
+
 def snapshot_features(
     snapshot: SimulationSnapshot, topology: Topology, run_id: str
 ) -> dict[str, dict[str, object]]:
     """Build a complete feature replacement for every managed twin."""
     features: dict[str, dict[str, object]] = {topology.mine_id: mine_features(snapshot, run_id)}
+    if snapshot.production is not None:
+        features[equipment_thing_id(snapshot.production.equipment_id)] = equipment_features(
+            snapshot, run_id
+        )
+    features.update(
+        {
+            airway_thing_id(airway.id): airway_features(snapshot, airway.id, run_id)
+            for airway in topology.airways
+        }
+    )
     features.update(
         {
             zone_thing_id(zone.id): zone_features(snapshot, topology, zone.id, run_id)

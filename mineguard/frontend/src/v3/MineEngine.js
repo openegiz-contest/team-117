@@ -90,6 +90,7 @@ export class MineEngine {
     this.arrowSpecs=[];
     this.structuralMaterials=[];
     this.fanRims=[];
+    this.productionLamps=[];
     this.softwareRenderer=isSoftwareRenderer();
     // One shared set of flow materials lets every airflow beam merge into three draw calls.
     this.flowMats={
@@ -618,6 +619,8 @@ export class MineEngine {
     this.box(.16,.9,.16,0,.45,0,steel,grp);
     const bulb=new THREE.Mesh(new THREE.SphereGeometry(.18,9,8),unlit(color));
     bulb.position.y=.96;this.add(bulb,grp);
+    // Face work lamps show the cutting machine's state (amber running, red tripped).
+    bulb.userData.dynamic=true;this.productionLamps.push(bulb);
     return grp;
   }
   makeSensors(){
@@ -733,6 +736,8 @@ export class MineEngine {
     }
     const faulted=Boolean(data?.fan?.faulted);
     for(const rim of this.fanRims)rim.material.color.setHex(faulted?ALERT:0x19edff);
+    const tripped=data?.production?.running===false;
+    for(const lamp of this.productionLamps)lamp.material.color.setHex(tripped?ALERT:0xffc445);
   }
   getPositions(){
     const rect=this.renderer.domElement.getBoundingClientRect();

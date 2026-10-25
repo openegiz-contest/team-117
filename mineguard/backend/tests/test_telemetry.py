@@ -2,12 +2,14 @@ import json
 
 import pytest
 
-from app.integrations.bootstrap_twins import fan_thing_id, zone_thing_id
+from app.integrations.bootstrap_twins import airway_thing_id, fan_thing_id, zone_thing_id
 from app.integrations.telemetry import (
+    airway_features,
     ditto_modify_features,
     fan_features,
     mine_features,
     mqtt_topic,
+    snapshot_features,
     validate_run_id,
     zone_features,
 )
@@ -67,21 +69,35 @@ def test_fan_telemetry_publishes_actual_rpm_with_explicit_unit(
     assert rpm["unit"] == "rpm"
 
 
-def test_all_nine_feature_documents_are_complete(
+def test_airway_twin_publishes_flow_and_obstruction(
+    topology: Topology, parameters: Parameters
+) -> None:
+    simulation = Simulation(topology, parameters)
+    simulation.set_obstruction("E03", 4.0)
+    features = airway_features(simulation.snapshot(), "E03", "m2-test-airway")
+    flow = features["flow"]["properties"]  # type: ignore[index]
+    obstruction = features["obstruction"]["properties"]  # type: ignore[index]
+    assert flow["unit"] == "m3/s"
+    assert flow["value"] == pytest.approx(simulation.airflow.airway_flows_m3s["E03"])
+    assert obstruction["value"] == 4.0
+    assert obstruction["status"] == "RESTRICTED"
+
+
+def test_every_managed_feature_document_is_complete(
     topology: Topology, parameters: Parameters
 ) -> None:
     snapshot = Simulation(topology, parameters).snapshot()
-    documents = {topology.mine_id: mine_features(snapshot, "m2-test")}
-    documents.update(
-        {
-            zone_thing_id(zone.id): zone_features(snapshot, topology, zone.id, "m2-test")
-            for zone in topology.zones
-        }
-    )
-    documents.update(
-        {fan_thing_id(fan.id): fan_features(snapshot, fan.id, "m2-test") for fan in topology.fans}
-    )
-    assert len(documents) == 9
+    documents = snapshot_features(snapshot, topology, "m2-test")
+    assert set(documents) == {
+        topology.mine_id,
+        *(zone_thing_id(zone.id) for zone in topology.zones),
+        *(fan_thing_id(fan.id) for fan in topology.fans),
+        *(airway_thing_id(airway.id) for airway in topology.airways),
+        "mineguard:shearer-z04",
+    }
+    assert documents[topology.mine_id] == mine_features(snapshot, "m2-test")
+    assert documents[fan_thing_id("FAN_AUX")] == fan_features(snapshot, "FAN_AUX", "m2-test")
+    assert len(documents) == 16
     for thing_id, features in documents.items():
         command = ditto_modify_features(thing_id, features)
         assert command["path"] == "/features"

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { getEvidence, getScenarioState, getTwin, scenarioCommand } from '../api/client'
-import type { ScenarioState } from '../api/contracts'
+import { getEvidence, getScenarios, getScenarioState, getTwin, scenarioCommand } from '../api/client'
+import type { ScenarioDefinition, ScenarioState } from '../api/contracts'
 import { useDecisionTrace } from '../hooks/useDecisionTrace'
 import { useMineState } from '../hooks/useMineState'
 import EvidenceDashboard from './EvidenceDashboard.jsx'
@@ -36,6 +36,15 @@ function usePatchedPageState(loadTwinReadbacks = false) {
   const [pending, setPending] = useState(false)
   const [twinReadbacks, setTwinReadbacks] = useState<Record<string, unknown>>({})
   const [twinError, setTwinError] = useState<string | null>(null)
+  const [definitions, setDefinitions] = useState<ScenarioDefinition[]>([])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void getScenarios(controller.signal)
+      .then(setDefinitions)
+      .catch((reason: Error) => { if (!controller.signal.aborted) setScenarioError(reason.message) })
+    return () => controller.abort()
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -57,6 +66,7 @@ function usePatchedPageState(loadTwinReadbacks = false) {
     return () => { controller.abort(); window.clearTimeout(timer) }
   }, [])
 
+  const equipmentId = mine.snapshot?.production?.equipment_id ?? null
   useEffect(() => {
     if (!loadTwinReadbacks || !mine.topology) return
     const controller = new AbortController()
@@ -65,6 +75,8 @@ function usePatchedPageState(loadTwinReadbacks = false) {
       mine.topology.mine_id,
       ...mine.topology.zones.map((zone) => `mineguard:zone-${zone.id.toLowerCase()}`),
       ...mine.topology.fans.map((fan) => `mineguard:${fan.id.toLowerCase().replaceAll('_', '-')}`),
+      ...mine.topology.airways.map((airway) => `mineguard:airway-${airway.id.toLowerCase()}`),
+      ...(equipmentId ? [`mineguard:${equipmentId.toLowerCase().replaceAll('_', '-')}`] : []),
     ]
     const read = async () => {
       const results = await Promise.allSettled(ids.map(async (id) => [id, await getTwin(id, controller.signal)] as const))
@@ -80,7 +92,7 @@ function usePatchedPageState(loadTwinReadbacks = false) {
     }
     void read()
     return () => { controller.abort(); window.clearTimeout(timer) }
-  }, [loadTwinReadbacks, mine.topology])
+  }, [loadTwinReadbacks, mine.topology, equipmentId])
 
   const execute = async (path: string) => {
     setPending(true)
@@ -104,6 +116,7 @@ function usePatchedPageState(loadTwinReadbacks = false) {
 
   return {
     data,
+    definitions,
     trace,
     pending,
     error: mine.error ?? scenarioError ?? decisionError ?? twinError,
@@ -125,6 +138,7 @@ export function PatchedOperationalPage({ view }: { view: 'twin' | 'scenario' | '
     view={view}
     setView={navigate}
     data={state.data}
+    scenarios={state.definitions}
     error={state.error}
     pending={state.pending}
     startScenario={state.startScenario}

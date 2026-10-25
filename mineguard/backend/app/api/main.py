@@ -13,7 +13,12 @@ from fastapi.responses import JSONResponse
 
 from app.api.service import RuntimeService, RuntimeUnavailableError
 from app.config import load_configuration
-from app.integrations.bootstrap_twins import fan_thing_id, zone_thing_id
+from app.integrations.bootstrap_twins import (
+    airway_thing_id,
+    equipment_thing_id,
+    fan_thing_id,
+    zone_thing_id,
+)
 from app.integrations.live import LivePlatformBridge
 from app.models import (
     ScenarioDefinition,
@@ -25,11 +30,13 @@ from app.models import (
 from app.simulation.runtime import Simulation
 
 
-def _managed_ids(topology: Topology) -> set[str]:
+def _managed_ids(topology: Topology, equipment_id: str) -> set[str]:
     return {
         topology.mine_id,
         *(zone_thing_id(zone.id) for zone in topology.zones),
         *(fan_thing_id(fan.id) for fan in topology.fans),
+        *(airway_thing_id(airway.id) for airway in topology.airways),
+        equipment_thing_id(equipment_id),
     }
 
 
@@ -48,6 +55,7 @@ def _service_from_environment() -> RuntimeService:
             password,
             os.environ.get("MQTT_HOST", "mosquitto"),
             int(os.environ.get("MQTT_PORT", "1883")),
+            production=parameters.production,
         )
     return RuntimeService(
         Simulation(topology, parameters),
@@ -158,6 +166,15 @@ def create_app(service: RuntimeService | None = None) -> FastAPI:
         runtime.require_available()
         return runtime.optimize()
 
+    @app.post("/api/v1/vod/apply", response_model=VodDecision)
+    def apply_vod(request: Request) -> VodDecision:
+        """Command the current VOD recommendation in the simulation only."""
+        require_simulation_command(request)
+        try:
+            return runtime.apply_vod()
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
     @app.get("/api/v1/decision-trace")
     def decision_trace() -> dict[str, Any]:
         runtime.require_available()
@@ -208,7 +225,7 @@ def create_app(service: RuntimeService | None = None) -> FastAPI:
 
     @app.get("/api/v1/twins/{thing_id:path}")
     def twin(thing_id: str) -> JSONResponse:
-        if thing_id not in _managed_ids(runtime.topology):
+        if thing_id not in _managed_ids(runtime.topology, runtime.equipment_id):
             raise HTTPException(status_code=404, detail="Unknown managed twin")
         try:
             value: dict[str, Any] | None = runtime.read_twin(thing_id)

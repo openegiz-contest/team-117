@@ -35,8 +35,12 @@ class VodController:
         self.topology = topology
         self.parameters = parameters
         self._volumes = {zone.id: zone.volume_m3 for zone in topology.zones}
+        # Default sources assume the cutting machine is running (the baseline state).
+        production = parameters.production
         self._sources = {zone.zone_id: zone.methane_source_m3s for zone in parameters.initial_zones}
         self._co_sources = {zone.zone_id: zone.co_source_m3s for zone in parameters.initial_zones}
+        self._sources[production.zone_id] += production.cutting_methane_m3s
+        self._co_sources[production.zone_id] += production.equipment_co_m3s
 
     def optimize(
         self,

@@ -122,6 +122,14 @@ export async function scenarioCommand(path: string): Promise<ScenarioState> {
   return value
 }
 
+/** Command the current VOD recommendation in the simulation (guarded, never equipment). */
+export async function applyVodRecommendation(): Promise<Record<string, unknown>> {
+  return (await request('/api/v1/vod/apply', undefined, {
+    method: 'POST',
+    headers: { 'X-MineGuard-Simulation': 'SIMULATION_ONLY' },
+  })) as Record<string, unknown>
+}
+
 export async function getDecisionTrace(signal?: AbortSignal): Promise<Record<string, unknown>> {
   return (await request('/api/v1/decision-trace', signal)) as Record<string, unknown>
 }

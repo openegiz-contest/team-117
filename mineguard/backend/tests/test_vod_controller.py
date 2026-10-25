@@ -178,9 +178,12 @@ def test_runtime_applies_selected_command_atomically(
     assert feedback.command_status == "APPLIED"
     assert model.snapshot().tick == before_tick
     assert decision.selected is not None
-    assert {fan.fan_id: fan.actual_speed_fraction for fan in model.snapshot().fans} == {
-        item.fan_id: item.speed_fraction for item in decision.selected.fan_speeds
-    }
+    commanded = {item.fan_id: item.speed_fraction for item in decision.selected.fan_speeds}
+    assert {fan.fan_id: fan.requested_speed_fraction for fan in model.snapshot().fans} == commanded
+    # The drives reach the new setting through the configured ramp (at most 0.2 at 5 %/s).
+    for _ in range(8):
+        model.tick()
+    assert {fan.fan_id: fan.actual_speed_fraction for fan in model.snapshot().fans} == commanded
 
 
 def test_runtime_rejects_non_selected_decision_without_mutation(

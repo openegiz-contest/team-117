@@ -61,3 +61,23 @@
 /* CPU-only WebGL: backdrop blurs over the live canvas are recomputed in software every frame. */
 html[data-render-profile=software] .floating-label,html[data-render-profile=software] .selected-sector-pop,html[data-render-profile=software] .zone-inspector,html[data-render-profile=software] .zone-selector,html[data-render-profile=software] .incident-backdrop{backdrop-filter:none}
 html[data-render-profile=software] .floating-label,html[data-render-profile=software] .selected-sector-pop{background:#031c2cf4}
+
+/* Ventilation network plan view (Ditto readback) */
+.network-map{position:absolute;left:18px;bottom:62px;z-index:4;width:min(430px,42%);margin:0;padding:8px 10px 4px;border:1px solid #256780;border-radius:5px;background:#03141fe6;color:#b9e9f4;font-family:Rajdhani,Arial,sans-serif}
+.network-map figcaption{display:flex;justify-content:space-between;gap:8px;font-size:11px;letter-spacing:.08em;color:#6fb6c9}.network-map figcaption b{color:#14eeff}
+.network-map svg{display:block;width:100%;height:auto}
+.network-airway line{stroke:#14eeff;color:#14eeff;stroke-linecap:round;opacity:.85}
+.network-airway.restricted line{stroke:#ffc247;color:#ffc247;stroke-dasharray:10 7}
+.network-airway.still line{stroke:#5b6b73;color:#5b6b73;stroke-dasharray:4 6}
+.network-airway text{fill:#d6eefb;font-size:19px;font-weight:600;paint-order:stroke;stroke:#03141f;stroke-width:4px}
+.network-airway.restricted text{fill:#ffc247}
+.network-zone{cursor:pointer}.network-zone circle{fill:#062433;stroke-width:5}
+.network-zone.selected circle{stroke-width:9;fill:#0b3446}
+.network-zone:focus-visible{outline:none}.network-zone:focus-visible circle{stroke-dasharray:6 4}
+.network-zone .zone-code{fill:#fff;font-size:17px;font-weight:700}.network-zone .zone-gas{fill:#9fe9f5;font-size:14px}
+.network-fan circle{fill:#0b3446;stroke:#14eeff;stroke-width:3}.network-fan text{fill:#9fe9f5;font-size:16px;font-weight:600}
+.network-fan.faulted circle{stroke:#ff506e;fill:#3a0f19}.network-fan.faulted text{fill:#ff8095}
+@media(max-width:900px){.network-map{position:static;width:auto;margin:8px}}
+.network-machine rect{fill:#2b2410;stroke:#ffc247;stroke-width:3}.network-machine text{fill:#ffd27a;font-size:16px;font-weight:600}
+.network-machine.tripped rect{fill:#3a0f19;stroke:#ff506e}.network-machine.tripped text{fill:#ff8095}
+.machine-state strong{color:#ffc247}.machine-state.tripped strong{color:#ff6b82}

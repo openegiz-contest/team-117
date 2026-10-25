@@ -35,7 +35,16 @@ export interface Snapshot {
   /** ECLIPSE_DITTO_READBACK when rebuilt from the platform; LOCAL_MODEL_SNAPSHOT only without a platform. */
   publication_status?: 'LOCAL_MODEL_SNAPSHOT' | 'ECLIPSE_DITTO_READBACK'
   zones: Array<{ zone_id: string; methane_fraction: number; co_ppm: number }>
-  airways: Array<{ airway_id: string; flow_m3s: number }>
+  airways: Array<{ airway_id: string; flow_m3s: number; resistance_factor?: number }>
+  /** Cutting machine whose operation is stopped by the zone's simulated trip_power. */
+  production?: {
+    equipment_id: string
+    zone_id: string
+    running: boolean
+    power_kw: number
+    cutting_methane_m3s: number
+    equipment_co_m3s: number
+  } | null
   fans: Array<{
     fan_id: string
     actual_speed_fraction: number
@@ -80,6 +89,11 @@ export interface ScenarioDefinition {
   methane_source_m3s?: number | null
   fan_failure_id?: string | null
   fan_failure_at_seconds?: number | null
+  obstruction_airway_id?: string | null
+  obstruction_factor?: number | null
+  obstruction_at_seconds?: number | null
+  sensor_failure_zone_id?: string | null
+  sensor_failure_at_seconds?: number | null
 }
 
 export interface ScenarioState {
@@ -279,23 +293,22 @@ export function isReadiness(value: unknown): value is Readiness {
 
 export function isScenarioDefinition(value: unknown): value is ScenarioDefinition {
   if (!isRecord(value)) return false
-  const methaneZone = value.methane_source_zone_id
-  const methaneRate = value.methane_source_m3s
-  const fanId = value.fan_failure_id
-  const fanAt = value.fan_failure_at_seconds
-  const hasMethane = methaneZone != null || methaneRate != null
-  const hasFan = fanId != null || fanAt != null
-  const methaneValid = !hasMethane || (isIdentifier(methaneZone) && isNonnegative(methaneRate))
-  const fanValid = !hasFan || (isIdentifier(fanId) && isNonnegative(fanAt))
+  // Each scenario defines exactly one complete action group.
+  const groups: Array<[unknown[], boolean]> = [
+    [[value.methane_source_zone_id, value.methane_source_m3s], isIdentifier(value.methane_source_zone_id) && isNonnegative(value.methane_source_m3s)],
+    [[value.fan_failure_id, value.fan_failure_at_seconds], isIdentifier(value.fan_failure_id) && isNonnegative(value.fan_failure_at_seconds)],
+    [[value.obstruction_airway_id, value.obstruction_factor, value.obstruction_at_seconds], isIdentifier(value.obstruction_airway_id) && isFiniteNumber(value.obstruction_factor) && value.obstruction_factor > 1 && isNonnegative(value.obstruction_at_seconds)],
+    [[value.sensor_failure_zone_id, value.sensor_failure_at_seconds], isIdentifier(value.sensor_failure_zone_id) && isNonnegative(value.sensor_failure_at_seconds)],
+  ]
+  const present = groups.filter(([fields]) => fields.some((field) => field != null))
   return (
     isIdentifier(value.id) &&
     isIdentifier(value.name) &&
     isIdentifier(value.description) &&
     isFiniteNumber(value.duration_seconds) &&
     value.duration_seconds > 0 &&
-    methaneValid &&
-    fanValid &&
-    hasMethane !== hasFan
+    present.length === 1 &&
+    present[0][1]
   )
 }
 

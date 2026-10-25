@@ -85,7 +85,57 @@ def test_pause_and_resume_preserve_scenario_time(
     assert simulation.tick() is not None
 
 
-@pytest.mark.parametrize("scenario_id", ["S1_METHANE_LEAK", "S2_MAIN_FAN_FAILURE"])
+def test_airway_obstruction_redistributes_flow_and_restricts_the_face(
+    topology: Topology, parameters: Parameters
+) -> None:
+    simulation = Simulation(topology, parameters)
+    engine = ScenarioEngine(simulation, load_scenarios())
+    before = {item.airway_id: item.flow_m3s for item in simulation.snapshot().airways}
+    engine.start("S3_AIRWAY_OBSTRUCTION")
+    for _ in range(40):
+        simulation.tick()
+        engine.after_tick()
+    snapshot = simulation.snapshot()
+    after = {item.airway_id: item for item in snapshot.airways}
+    assert "AIRWAY_OBSTRUCTION_APPLIED" in engine.state().applied_actions
+    assert after["E03"].resistance_factor == 250.0
+    assert after["E03"].flow_m3s < 0.25 * before["E03"]
+    assert after["E02"].flow_m3s > before["E02"]
+    # Junction balance still holds after redistribution.
+    assert after["E02"].flow_m3s + after["E03"].flow_m3s == pytest.approx(after["E01"].flow_m3s)
+    face = next(item for item in snapshot.risks if item.zone_id == "Z04")
+    assert face.state is RiskState.WARNING
+    assert "DILUTION_AIRFLOW_LOW" in face.reason_codes
+
+
+def test_sensor_loss_is_unknown_never_safe_and_restores(
+    topology: Topology, parameters: Parameters
+) -> None:
+    simulation = Simulation(topology, parameters)
+    engine = ScenarioEngine(simulation, load_scenarios())
+    engine.start("S4_SENSOR_LOSS")
+    for _ in range(20):
+        simulation.tick()
+        engine.after_tick()
+    frozen = next(z for z in simulation.snapshot().zones if z.zone_id == "Z04")
+    for _ in range(20):
+        simulation.tick()
+        engine.after_tick()
+    snapshot = simulation.snapshot()
+    face = next(item for item in snapshot.risks if item.zone_id == "Z04")
+    assert face.state is RiskState.UNKNOWN_DATA
+    assert face.quality.value == "STALE"
+    # The zone keeps reporting its last received reading; nothing is invented.
+    assert next(z for z in snapshot.zones if z.zone_id == "Z04") == frozen
+    safety = next(item for item in snapshot.safety if item.zone_id == "Z04")
+    assert safety.production_stop and safety.evacuation_advisory
+    assert simulation.optimize_ventilation().status.value == "DISABLED_BY_SAFETY"
+
+
+@pytest.mark.parametrize(
+    "scenario_id",
+    ["S1_METHANE_LEAK", "S2_MAIN_FAN_FAILURE", "S3_AIRWAY_OBSTRUCTION", "S4_SENSOR_LOSS"],
+)
 def test_completed_scenario_clock_stops_while_physics_continues(
     topology: Topology, parameters: Parameters, scenario_id: str
 ) -> None:
@@ -101,6 +151,8 @@ def test_completed_scenario_clock_stops_while_physics_continues(
     assert completed.status is ScenarioRunStatus.COMPLETED
     assert completed.elapsed_seconds == completed.duration_seconds
     assert not any(fan.faulted for fan in completed_snapshot.fans)
+    assert all(item.resistance_factor == 1.0 for item in completed_snapshot.airways)
+    assert all(item.quality.value == "GOOD" for item in completed_snapshot.risks)
 
     for _ in range(10):
         assert simulation.tick() is not None

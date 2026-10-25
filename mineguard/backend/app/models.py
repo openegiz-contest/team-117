@@ -164,6 +164,16 @@ class VodParameters(Model):
         return self
 
 
+class ProductionParameters(Model):
+    """Coal-cutting machine whose operation adds gas sources to its zone."""
+
+    equipment_id: Identifier
+    zone_id: Identifier
+    operating_power_kw: Positive
+    cutting_methane_m3s: Nonnegative
+    equipment_co_m3s: Nonnegative
+
+
 class Parameters(Model):
     schema_version: Literal[1]
     simulation_only: Literal[True]
@@ -172,8 +182,10 @@ class Parameters(Model):
     tick_seconds: Annotated[float, Field(gt=0, le=60)]
     cfl_limit: Annotated[float, Field(gt=0, le=1)]
     max_substeps: Annotated[int, Field(ge=1, le=100000)]
+    fan_ramp_fraction_per_second: Annotated[float, Field(gt=0, le=1, allow_inf_nan=False)]
     initial_zones: tuple[InitialZone, ...] = Field(min_length=6, max_length=6)
     initial_fans: tuple[InitialFan, ...] = Field(min_length=2, max_length=2)
+    production: ProductionParameters
     risk_thresholds: RiskThresholds
     vod: VodParameters
 
@@ -204,6 +216,8 @@ class ZoneConcentration(Model):
 class AirwayFlow(Model):
     airway_id: Identifier
     flow_m3s: Nonnegative
+    # Simulated obstruction: multiplier on the nominal airway resistance (1 = open).
+    resistance_factor: Annotated[float, Field(ge=1, allow_inf_nan=False)] = 1.0
 
 
 class FanState(Model):
@@ -213,6 +227,15 @@ class FanState(Model):
     actual_speed_rpm: Nonnegative
     faulted: bool
     power_kw: Nonnegative
+
+
+class ProductionState(Model):
+    equipment_id: Identifier
+    zone_id: Identifier
+    running: bool
+    power_kw: Nonnegative
+    cutting_methane_m3s: Nonnegative
+    equipment_co_m3s: Nonnegative
 
 
 class TelemetryQuality(StrEnum):
@@ -326,22 +349,48 @@ class ScenarioDefinition(Model):
     methane_source_m3s: Nonnegative | None = None
     fan_failure_id: Identifier | None = None
     fan_failure_at_seconds: Nonnegative | None = None
+    obstruction_airway_id: Identifier | None = None
+    obstruction_factor: Annotated[float, Field(gt=1, allow_inf_nan=False)] | None = None
+    obstruction_at_seconds: Nonnegative | None = None
+    sensor_failure_zone_id: Identifier | None = None
+    sensor_failure_at_seconds: Nonnegative | None = None
 
     @model_validator(mode="after")
     def check_action(self) -> Self:
-        methane = self.methane_source_zone_id is not None or self.methane_source_m3s is not None
-        fan = self.fan_failure_id is not None or self.fan_failure_at_seconds is not None
-        if methane and (self.methane_source_zone_id is None or self.methane_source_m3s is None):
-            raise ValueError("Methane scenario requires zone and source rate")
-        if fan and (self.fan_failure_id is None or self.fan_failure_at_seconds is None):
-            raise ValueError("Fan scenario requires fan and failure time")
-        if methane == fan:
+        groups = {
+            "Methane scenario requires zone and source rate": (
+                self.methane_source_zone_id,
+                self.methane_source_m3s,
+            ),
+            "Fan scenario requires fan and failure time": (
+                self.fan_failure_id,
+                self.fan_failure_at_seconds,
+            ),
+            "Obstruction scenario requires airway, factor and time": (
+                self.obstruction_airway_id,
+                self.obstruction_factor,
+                self.obstruction_at_seconds,
+            ),
+            "Sensor scenario requires zone and failure time": (
+                self.sensor_failure_zone_id,
+                self.sensor_failure_at_seconds,
+            ),
+        }
+        present = 0
+        for message, values in groups.items():
+            given = [value is not None for value in values]
+            if any(given) and not all(given):
+                raise ValueError(message)
+            present += all(given)
+        if present != 1:
             raise ValueError("Scenario must define exactly one supported action")
-        if (
-            self.fan_failure_at_seconds is not None
-            and self.fan_failure_at_seconds >= self.duration_seconds
+        for moment in (
+            self.fan_failure_at_seconds,
+            self.obstruction_at_seconds,
+            self.sensor_failure_at_seconds,
         ):
-            raise ValueError("Fan failure must occur before scenario completion")
+            if moment is not None and moment >= self.duration_seconds:
+                raise ValueError("Scenario action must occur before scenario completion")
         return self
 
 
@@ -375,3 +424,4 @@ class SimulationSnapshot(Model):
     fans: tuple[FanState, ...]
     risks: tuple[RiskAssessment, ...] = ()
     safety: tuple[SimulatedSafetyDecision, ...] = ()
+    production: ProductionState | None = None

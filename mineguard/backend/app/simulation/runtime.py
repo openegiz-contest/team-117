@@ -13,6 +13,7 @@ from app.models import (
     AirwayFlow,
     FanState,
     Parameters,
+    ProductionState,
     RiskState,
     SimulationSnapshot,
     TelemetryQuality,
@@ -58,8 +59,13 @@ class Simulation:
         self._co_sources = self._initial_co_sources.copy()
         self._last_co_step: GasStepResult | None = None
         self._fan_speeds = {fan_id: setting[0] for fan_id, setting in self._initial_fans.items()}
+        # Commanded speeds; the actual speed ramps toward them each tick.
+        self._fan_targets = self._fan_speeds.copy()
         self._fan_faults = {fan_id: setting[1] for fan_id, setting in self._initial_fans.items()}
+        self._production_running = True
         self._obstructions: dict[str, float] = {}
+        # Zones whose gas sensors stopped reporting: last received CH4/CO fraction and time.
+        self._offline: dict[str, tuple[float, float, float]] = {}
         self._airflow = solve_airflow(
             self.topology, self._fan_speeds, self._fan_faults, self._obstructions
         )
@@ -97,7 +103,39 @@ class Simulation:
             faults[fan_id] = faulted
         airflow = solve_airflow(self.topology, speeds, faults, self._obstructions)
         self._fan_speeds, self._fan_faults, self._airflow = speeds, faults, airflow
+        self._fan_targets[fan_id] = speeds[fan_id]
         self._refresh_controls()
+
+    def _command_fans(self, targets: dict[str, float]) -> None:
+        """Record commanded speeds; tick() ramps the actual speed toward them."""
+        if set(targets) != set(self._fan_speeds):
+            raise ValueError("A fan command must specify every configured fan exactly once")
+        for fan_id, target in targets.items():
+            if isinstance(target, bool) or not isfinite(target) or not 0 <= target <= 1:
+                raise ValueError(f"Invalid commanded speed for {fan_id}")
+        self._fan_targets = dict(targets)
+        self._refresh_controls()
+
+    def _ramped_speeds(self) -> dict[str, float]:
+        """Move each actual fan speed toward its command at the configured drive ramp."""
+        step = self.parameters.fan_ramp_fraction_per_second * self._clock.step_seconds
+        speeds = {}
+        for fan_id, actual in self._fan_speeds.items():
+            target = self._fan_targets[fan_id]
+            if abs(target - actual) <= step:
+                speeds[fan_id] = target
+            else:
+                speeds[fan_id] = actual + step if target > actual else actual - step
+        return speeds
+
+    def _effective_sources(self) -> tuple[dict[str, float], dict[str, float]]:
+        """Configured gas sources plus the cutting machine's emissions while it runs."""
+        methane, co = dict(self._sources), dict(self._co_sources)
+        production = self.parameters.production
+        if self._production_running:
+            methane[production.zone_id] += production.cutting_methane_m3s
+            co[production.zone_id] += production.equipment_co_m3s
+        return methane, co
 
     def set_obstruction(self, airway_id: str, factor: float | None) -> None:
         """Set a simulated resistance multiplier; None restores the nominal airway."""
@@ -112,6 +150,34 @@ class Simulation:
         self._obstructions, self._airflow = obstructions, airflow
         self._refresh_controls()
 
+    def set_sensor_offline(self, zone_id: str, offline: bool) -> None:
+        """Simulate loss of a zone's gas-sensor communication.
+
+        The physics continues, but the zone keeps reporting its last received
+        reading marked STALE, so the risk engine treats it as UNKNOWN_DATA.
+        """
+        if zone_id not in self._fractions:
+            raise ValueError(f"Unknown zone: {zone_id}")
+        if offline:
+            self._offline.setdefault(
+                zone_id,
+                (
+                    self._fractions[zone_id],
+                    self._co_fractions[zone_id],
+                    self._clock.elapsed_seconds,
+                ),
+            )
+        else:
+            self._offline.pop(zone_id, None)
+        self._refresh_controls()
+
+    def _reported_gas(self, zone_id: str) -> tuple[float, float]:
+        """Methane and CO fractions as the zone's sensors report them."""
+        if zone_id in self._offline:
+            methane, co, _ = self._offline[zone_id]
+            return methane, co
+        return self._fractions[zone_id], self._co_fractions[zone_id]
+
     def set_methane_source(self, zone_id: str, source_m3s: float) -> None:
         """Set a fictional methane source for a deterministic scenario."""
         if zone_id not in self._sources:
@@ -122,11 +188,12 @@ class Simulation:
 
     def optimize_ventilation(self) -> VodDecision:
         """Return a simulation-only VOD proposal for the current state."""
+        methane, co = self._effective_sources()
         return self._vod_controller.optimize(
             self.snapshot(),
             obstruction_factors=self._obstructions,
-            methane_sources=self._sources,
-            co_sources=self._co_sources,
+            methane_sources=methane,
+            co_sources=co,
         )
 
     def apply_vod_decision(self, decision: VodDecision) -> VodDecision:
@@ -144,41 +211,39 @@ class Simulation:
         }
         if set(speeds) != set(self._fan_speeds):
             raise ValueError("VOD decision must specify every configured fan exactly once")
-        airflow = solve_airflow(self.topology, speeds, self._fan_faults, self._obstructions)
-        self._fan_speeds, self._airflow = speeds, airflow
-        self._refresh_controls()
+        # Validate that the commanded operating point is solvable before accepting it.
+        solve_airflow(self.topology, speeds, self._fan_faults, self._obstructions)
+        self._command_fans(speeds)
         return decision.model_copy(update={"command_status": "APPLIED"})
 
     def apply_emergency_response(self) -> bool:
-        """Apply current emergency requests to the model, never to equipment.
+        """Command the current emergency fan requests in the model, never in equipment.
 
-        The quasi-steady fan model reaches its new setting immediately. This is
-        model feedback, not a measured motor ramp or hardware acknowledgement.
+        The commands are reached through the drive ramp on later ticks, so fan
+        feedback reads PENDING until the actual speed equals the request.
         Advisory/warning requests remain proposals; reset restores baseline.
         """
         if self._paused:
             return False
-        speeds = self._fan_speeds.copy()
+        targets = self._fan_targets.copy()
         for decision in self._safety:
             if decision.risk_state is not RiskState.EMERGENCY:
                 continue
             for request in decision.fan_requests:
                 if not self._fan_faults[request.fan_id]:
-                    speeds[request.fan_id] = max(
-                        speeds[request.fan_id], request.requested_speed_fraction
+                    targets[request.fan_id] = max(
+                        targets[request.fan_id], request.requested_speed_fraction
                     )
-        if speeds == self._fan_speeds:
+        if targets == self._fan_targets:
             return False
-        airflow = solve_airflow(self.topology, speeds, self._fan_faults, self._obstructions)
-        self._fan_speeds, self._airflow = speeds, airflow
-        self._refresh_controls()
+        self._command_fans(targets)
         return True
 
     def _fan_states(self) -> tuple[FanState, ...]:
         return tuple(
             FanState(
                 fan_id=fan_id,
-                requested_speed_fraction=self._fan_speeds[fan_id],
+                requested_speed_fraction=self._fan_targets[fan_id],
                 actual_speed_fraction=point.speed_fraction,
                 actual_speed_rpm=fan_speed_rpm(
                     self._fans[fan_id], point.speed_fraction, faulted=point.faulted
@@ -209,11 +274,15 @@ class Simulation:
             self._risk_engine.evaluate(
                 ZoneObservation(
                     zone_id=zone.id,
-                    methane_fraction=self._fractions[zone.id],
-                    co_fraction=self._co_fractions[zone.id],
+                    methane_fraction=self._reported_gas(zone.id)[0],
+                    co_fraction=self._reported_gas(zone.id)[1],
                     airflow_m3s=self._zone_airflow(zone.id),
-                    sample_seconds=now,
-                    quality=TelemetryQuality.GOOD,
+                    sample_seconds=self._offline[zone.id][2] if zone.id in self._offline else now,
+                    quality=(
+                        TelemetryQuality.STALE
+                        if zone.id in self._offline
+                        else TelemetryQuality.GOOD
+                    ),
                     source_type="SYNTHETIC_PHYSICS",
                 ),
                 now,
@@ -225,6 +294,24 @@ class Simulation:
         self._safety = tuple(
             decide_simulated_safety(risk, fans, self._clock.ticks) for risk in self._risks
         )
+        # The simulated production stop (trip_power) halts the cutting machine; it
+        # restarts only when its zone no longer requires a stop.
+        production_zone = self.parameters.production.zone_id
+        self._production_running = not next(
+            item.production_stop for item in self._safety if item.zone_id == production_zone
+        )
+
+    def _production_state(self) -> ProductionState:
+        production = self.parameters.production
+        running = self._production_running
+        return ProductionState(
+            equipment_id=production.equipment_id,
+            zone_id=production.zone_id,
+            running=running,
+            power_kw=production.operating_power_kw if running else 0.0,
+            cutting_methane_m3s=production.cutting_methane_m3s if running else 0.0,
+            equipment_co_m3s=production.equipment_co_m3s if running else 0.0,
+        )
 
     def snapshot(self) -> SimulationSnapshot:
         return SimulationSnapshot(
@@ -234,28 +321,40 @@ class Simulation:
             zones=tuple(
                 ZoneConcentration(
                     zone_id=zone,
-                    methane_fraction=self._fractions[zone],
-                    co_ppm=fraction_to_ppm(self._co_fractions[zone]),
+                    methane_fraction=self._reported_gas(zone)[0],
+                    co_ppm=fraction_to_ppm(self._reported_gas(zone)[1]),
                 )
                 for zone in sorted(self._fractions)
             ),
             airways=tuple(
-                AirwayFlow(airway_id=airway, flow_m3s=flow)
+                AirwayFlow(
+                    airway_id=airway,
+                    flow_m3s=flow,
+                    resistance_factor=self._obstructions.get(airway, 1.0),
+                )
                 for airway, flow in sorted(self._airflow.airway_flows_m3s.items())
             ),
             fans=self._fan_states(),
             risks=self._risks,
             safety=self._safety,
+            production=self._production_state(),
         )
 
     def tick(self) -> GasStepResult | None:
         if self._paused:
             return None
+        speeds = self._ramped_speeds()
+        airflow = (
+            self._airflow
+            if speeds == self._fan_speeds
+            else solve_airflow(self.topology, speeds, self._fan_faults, self._obstructions)
+        )
+        methane_sources, co_sources = self._effective_sources()
         result = advance_gas(
             self._volumes,
             self._fractions,
-            gas_flows_from_airflow(self.topology, self._airflow),
-            self._sources,
+            gas_flows_from_airflow(self.topology, airflow),
+            methane_sources,
             self._clock.step_seconds,
             cfl_limit=self.parameters.cfl_limit,
             max_substeps=self.parameters.max_substeps,
@@ -263,13 +362,14 @@ class Simulation:
         co_result = advance_gas(
             self._volumes,
             self._co_fractions,
-            gas_flows_from_airflow(self.topology, self._airflow, tracer="co"),
-            self._co_sources,
+            gas_flows_from_airflow(self.topology, airflow, tracer="co"),
+            co_sources,
             self._clock.step_seconds,
             cfl_limit=self.parameters.cfl_limit,
             max_substeps=self.parameters.max_substeps,
         )
-        # Commit both tracer states and the clock only after every calculation succeeds.
+        # Commit fans, both tracer states and the clock only after every calculation succeeds.
+        self._fan_speeds, self._airflow = speeds, airflow
         self._fractions = result.fractions.copy()
         self._co_fractions = co_result.fractions.copy()
         self._last_co_step = co_result

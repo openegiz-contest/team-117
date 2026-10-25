@@ -88,3 +88,25 @@ does not model slip, motor dynamics, tachometer error, or measured shaft speed.
 
 Observed numerical behaviour: over live runs the maximum absolute balance
 residual of both tracers stays near 2e-15 m³ (see `validation.md`).
+
+## Production-dependent sources and drive ramp
+
+The Z04 methane source is split into a strata emission (0.015 m³/s, always
+present) and a coal-cutting emission (0.025 m³/s, only while the cutting
+machine runs); the total equals the earlier 0.04 m³/s baseline. CO is split
+the same way (0.00002 + 0.0001 m³/s). Each tick uses the effective sources:
+
+```text
+G_Z04(t) = G_strata + (machine running ? G_cutting : 0)
+```
+
+With the main fan failed (zero airflow), the Z04 fraction therefore rises by
+exactly `G_strata · Δt / V` once the machine has tripped; a unit test checks
+this analytically.
+
+Fan speed changes are rate-limited: each tick the actual speed moves toward the
+commanded speed by at most `0.05 · Δt` (fraction of rated speed). The network is
+re-solved whenever a speed changes, so airflow and power change smoothly during
+an emergency response. An airway obstruction multiplies that airway's
+resistance (S3 uses ×250 on E03), and the network solve redistributes flow while
+keeping every junction balanced.

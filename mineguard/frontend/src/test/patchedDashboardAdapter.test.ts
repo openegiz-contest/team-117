@@ -46,6 +46,7 @@ describe('exact-patch live adapter', () => {
     const data = toPatchedDashboardData(topology, snapshot, scenario, decision, readiness, 1_000)
     expect(data.zones.find((zone) => zone.id === 'Z04')).toMatchObject({ ch4: 1.6, co: 12, airflow: 8, quality: 'GOOD' })
     expect(data.fan).toMatchObject({ id: 'FAN_MAIN', rpm: 1200, override: 100, healthy: true })
+    expect(data.airways).toEqual([{ id: 'E01', from: 'Z01', to: 'Z04', flow: 12, resistanceFactor: 1 }])
     expect(data.scenario).toBe('S1_METHANE_LEAK')
     expect(data.source).toContain('ECLIPSE DITTO')
     expect(data.twinReadbacks).toEqual({})

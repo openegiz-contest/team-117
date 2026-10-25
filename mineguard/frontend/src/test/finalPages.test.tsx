@@ -1,11 +1,18 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import EvidenceDashboard from '../pages/EvidenceDashboard.jsx'
 import FinalThreePages from '../pages/FinalThreePages.jsx'
 
 const trace = vi.hoisted(() => ({ value: {} as Record<string, unknown> }))
-vi.mock('../api/client', () => ({ getDecisionTrace: () => Promise.resolve(trace.value) }))
+const applied = vi.hoisted(() => ({ calls: 0 }))
+vi.mock('../api/client', () => ({
+  getDecisionTrace: () => Promise.resolve(trace.value),
+  applyVodRecommendation: () => {
+    applied.calls += 1
+    return Promise.resolve({ command_status: 'APPLIED', selected: { fan_speeds: [{ fan_id: 'FAN_MAIN', speed_fraction: 0.6 }] } })
+  },
+}))
 
 afterEach(() => cleanup())
 
@@ -32,6 +39,18 @@ describe('energy page reports the controller decision, not a fixed label', () =>
     expect(screen.getByText('REJECTED')).toBeTruthy()
     expect(screen.getByText('1/2 feasible')).toBeTruthy()
     expect(screen.getByText('48.7%')).toBeTruthy()
+    const apply = screen.getByRole('button', { name: /Apply recommendation/ }) as HTMLButtonElement
+    expect(apply.disabled).toBe(false)
+    fireEvent.click(apply)
+    await waitFor(() => expect(screen.getByText(/APPLIED in the simulation: FAN_MAIN 60%/)).toBeTruthy())
+    expect(applied.calls).toBe(1)
+  })
+
+  it('keeps the apply button disabled while safety blocks optimization', async () => {
+    trace.value = { simulation_only: true, simulated_seconds: 42, constraints, vod_decision: { status: 'DISABLED_BY_SAFETY', command_status: 'NOT_ISSUED', reason_codes: [], selected: null, candidates: [], comparison: null } }
+    render(<FinalThreePages view="energy" {...pageProps} />)
+    await waitFor(() => expect(screen.getByText('NOT_ISSUED')).toBeTruthy())
+    expect((screen.getByRole('button', { name: /Apply recommendation/ }) as HTMLButtonElement).disabled).toBe(true)
   })
 })
 

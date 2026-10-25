@@ -17,8 +17,10 @@ For every candidate, the controller:
 `WARNING`, `EMERGENCY`, and `UNKNOWN_DATA` states disable optimization. A fan
 fault or an empty feasible set returns `NO_FEASIBLE_SAFE_OPTIMIZATION`; neither
 case is reported as a successful optimization. Selected commands are proposals
-until `Simulation.apply_vod_decision` validates and atomically applies them to
-the simulated runtime.
+until the operator presses *Apply recommendation (simulated)* on the Energy
+page (`POST /api/v1/vod/apply`). The backend recomputes the decision under the
+state lock, refuses it unless it is still SELECTED for the current state, and
+commands the speeds in the model; the fans then follow the 5 %/s drive ramp.
 
 ## Energy comparison
 

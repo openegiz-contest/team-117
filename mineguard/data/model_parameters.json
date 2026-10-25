@@ -6,6 +6,7 @@
   "tick_seconds": 0.5,
   "cfl_limit": 0.5,
   "max_substeps": 10000,
+  "fan_ramp_fraction_per_second": 0.05,
   "initial_zones": [
     {
       "zone_id": "Z01",
@@ -31,9 +32,9 @@
     {
       "zone_id": "Z04",
       "methane_fraction": 0.0015,
-      "methane_source_m3s": 0.04,
+      "methane_source_m3s": 0.015,
       "co_fraction": 0.000012,
-      "co_source_m3s": 0.00012
+      "co_source_m3s": 0.00002
     },
     {
       "zone_id": "Z05",
@@ -62,6 +63,13 @@
       "faulted": false
     }
   ],
+  "production": {
+    "equipment_id": "SHEARER_Z04",
+    "zone_id": "Z04",
+    "operating_power_kw": 600,
+    "cutting_methane_m3s": 0.025,
+    "equipment_co_m3s": 0.0001
+  },
   "risk_thresholds": {
     "advisory_methane_fraction": 0.005,
     "warning_methane_fraction": 0.01,

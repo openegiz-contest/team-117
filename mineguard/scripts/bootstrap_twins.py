@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create or explicitly migrate the nine M2 MineGuard X twins."""
+"""Create or explicitly migrate the 16 MineGuard X twins."""
 
 import argparse
 import json
@@ -25,9 +25,9 @@ def main() -> None:
     )
     args = parser.parse_args()
     config = PlatformConfig.from_compose_env(args.compose_env)
-    topology, _ = load_configuration()
+    topology, parameters = load_configuration()
     client = DittoClient(config.ditto_url, config.ditto_user, config.ditto_password)
-    result = bootstrap_twins(client, topology)
+    result = bootstrap_twins(client, topology, parameters.production)
     print(json.dumps(asdict(result), indent=2))
 
 

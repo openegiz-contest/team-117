@@ -28,16 +28,27 @@ def test_emergency_response_changes_flow_and_confirms_model_feedback(
     emergency(model)
     before = model.snapshot()
     assert model.apply_emergency_response()
+    commanded = model.snapshot()
+    assert commanded.tick == before.tick
+    assert commanded.zones == before.zones  # Actuation does not fabricate a lower gas reading.
+    # The command is accepted, but the drives have not moved yet.
+    assert all(f.requested_speed_fraction == 1.0 for f in commanded.fans)
+    assert [f.actual_speed_fraction for f in commanded.fans] == [
+        f.actual_speed_fraction for f in before.fans
+    ]
+    pending = next(s for s in commanded.safety if s.zone_id == "Z04")
+    assert {r.status for r in pending.fan_requests} == {"PENDING"}
+    assert not model.apply_emergency_response()  # Idempotent, no repeated mutation.
+    # Auxiliary fan 50 % -> 100 % at 5 %/s takes 10 s = 20 ticks; the main fan is faster.
+    for _ in range(20):
+        model.tick()
     after = model.snapshot()
-    assert after.tick == before.tick
-    assert after.zones == before.zones  # Actuation does not fabricate a lower gas reading.
     assert all(f.actual_speed_fraction == 1.0 for f in after.fans)
     assert sum(a.flow_m3s for a in after.airways) > sum(a.flow_m3s for a in before.airways)
     safety = next(s for s in after.safety if s.zone_id == "Z04")
     assert safety.production_stop and safety.evacuation_advisory
     assert not safety.optimization_enabled
     assert all(r.status == "ACHIEVED" and r.actual_speed_fraction == 1 for r in safety.fan_requests)
-    assert not model.apply_emergency_response()  # Idempotent, no repeated mutation.
     model.reset()
     assert model.snapshot() == initial
 
@@ -85,7 +96,10 @@ def test_emergency_response_respects_pause_and_normal_state(
 
 
 def test_live_worker_applies_emergency_response(topology: Topology, parameters: Parameters) -> None:
-    model = Simulation(topology, parameters.model_copy(update={"tick_seconds": 0.01}))
+    quick = parameters.model_copy(
+        update={"tick_seconds": 0.01, "fan_ramp_fraction_per_second": 1.0}
+    )
+    model = Simulation(topology, quick)
     model.set_fan("FAN_MAIN", faulted=True)
     service = RuntimeService(model)
     service.start()

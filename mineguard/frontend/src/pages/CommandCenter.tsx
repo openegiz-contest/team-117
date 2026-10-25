@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { getScenarioState, scenarioCommand } from '../api/client'
 import type { RiskState, ScenarioState } from '../api/contracts'
 import { useMineState } from '../hooks/useMineState'
+import { NetworkMap } from '../mine-map/NetworkMap'
 import { buildMineScene, highestRisk, RISK_PRIORITY } from '../mine-map/sceneModel'
 import { V3MineScene } from '../v3/V3MineScene'
 
@@ -73,6 +74,7 @@ export function CommandCenter() {
           <div className="kpi-pair"><div className="kpi"><div>FAN SPEED</div><strong>{Math.round(mainFan?.actualRpm ?? 0).toLocaleString()}</strong><small>RPM</small></div><div className="kpi"><div>INTAKE FLOW</div><strong>{display(intakeFlow, 1)}</strong><small>m³/s</small></div></div>
           <div className="vent-heading"><span>ACTUAL SPEED</span><strong>{Math.round((mainFan?.speedFraction ?? 0) * 100)}%</strong></div>
           <input type="range" min="0" max="100" value={Math.round((mainFan?.speedFraction ?? 0) * 100)} readOnly aria-label="Actual simulated fan speed" />
+          {model.production && <div className={`vent-heading machine-state ${model.production.running ? 'running' : 'tripped'}`}><span>{model.production.zoneId} CUTTING MACHINE</span><strong>{model.production.running ? `RUNNING · ${Math.round(model.production.powerKw)} kW` : 'TRIPPED (SIMULATED)'}</strong></div>}
           <button type="button" className="emergency-button" disabled={pending || activeScenario} onClick={() => void command('S1_METHANE_LEAK/start')}><AlertTriangle size={15} /> SIMULATE<br />METHANE OUTBURST</button>
         </section>
         <section className="panel telemetry-panel"><PanelHeading icon={<Wind size={19} />} title={<>SECTOR<br />TELEMETRY</>} aside={<span className="stream-state">LIVE<br />READINGS</span>} />
@@ -85,7 +87,8 @@ export function CommandCenter() {
         <div className="scene-tools"><button type="button" onClick={() => setAirflow((value) => !value)}><Wind size={13} /> Airflow: <b className={airflow ? 'online-text' : ''}>{airflow ? 'ON' : 'OFF'}</b></button><i /><button type="button" onClick={() => setResetSignal((value) => value + 1)}><LocateFixed size={13} /> Recenter View</button><i /><button type="button" onClick={() => setWireframe((value) => !value)}>◇ Wireframe: <b className={wireframe ? 'online-text' : ''}>{wireframe ? 'ON' : 'OFF'}</b></button><i /><button type="button" onClick={() => setShowSensors((value) => !value)}>Sensors: <b className={showSensors ? 'online-text' : ''}>{showSensors ? 'ON' : 'OFF'}</b></button></div>
         <V3MineScene model={model} selected={selectedZone.id} onSelect={setSelected} airflow={airflow} wireframe={wireframe} resetSignal={resetSignal} showSensors={showSensors} />
         <div className="selected-sector-pop"><div>SELECTED SECTOR <span>{selectedZone.id}</span></div><b>{selectedZone.name}</b><p>CH₄ <strong>{selectedZone.methanePercent.toFixed(3)}%</strong><span className={selectedZone.risk.toLowerCase()}>{selectedZone.risk.replace('_', ' ')}</span></p><small>FLOW: {selectedZone.airflowM3s.toFixed(1)} m³/s · QUALITY: {selectedZone.quality}</small></div>
-        <div className="sim-tray"><span className="tray-label">SIMULATION CONTROL</span>{activeScenario ? <button disabled={pending} onClick={() => void command('reset')}><RotateCcw size={12} /> Reset</button> : <button disabled={pending} onClick={() => void command('S1_METHANE_LEAK/start')}><Play size={12} /> Gas Release</button>}<button disabled={pending || scenario.status === 'IDLE'} onClick={() => void command(scenario.status === 'PAUSED' ? 'resume' : 'pause')}>{scenario.status === 'PAUSED' ? <Play size={12} /> : <Pause size={12} />} {scenario.status === 'PAUSED' ? 'Resume' : 'Pause'}</button><button disabled={pending || activeScenario} onClick={() => void command('S2_MAIN_FAN_FAILURE/start')}><Fan size={12} /> Fan Failure</button></div>
+        <NetworkMap topology={topology} model={model} selected={selectedZone.id} onSelect={setSelected} />
+        <div className="sim-tray"><span className="tray-label">SIMULATION CONTROL</span>{activeScenario ? <button disabled={pending} onClick={() => void command('reset')}><RotateCcw size={12} /> Reset</button> : <button disabled={pending} onClick={() => void command('S1_METHANE_LEAK/start')}><Play size={12} /> Gas Release</button>}<button disabled={pending || scenario.status === 'IDLE'} onClick={() => void command(scenario.status === 'PAUSED' ? 'resume' : 'pause')}>{scenario.status === 'PAUSED' ? <Play size={12} /> : <Pause size={12} />} {scenario.status === 'PAUSED' ? 'Resume' : 'Pause'}</button><button disabled={pending || activeScenario} onClick={() => void command('S2_MAIN_FAN_FAILURE/start')}><Fan size={12} /> Fan Failure</button><button disabled={pending || activeScenario} onClick={() => void command('S3_AIRWAY_OBSTRUCTION/start')}><Wind size={12} /> Airway Block</button><button disabled={pending || activeScenario} onClick={() => void command('S4_SENSOR_LOSS/start')}><AlertTriangle size={12} /> Sensor Loss</button></div>
       </section>
 
       <aside className="right-rail rail">

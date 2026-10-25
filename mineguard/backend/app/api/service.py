@@ -49,6 +49,10 @@ class RuntimeService:
         # not the in-memory model, is what the UI reads when the platform is configured.
         self._platform_snapshot: SimulationSnapshot | None = None
         self._platform_history: deque[SimulationSnapshot] = deque(maxlen=history_limit)
+        topology = simulation.topology
+        self._managed_twin_count = (
+            2 + len(topology.zones) + len(topology.fans) + len(topology.airways)
+        )  # mine + zones + fans + airways + the production machine
         self._max_residual_m3 = 0.0
         self._residual_ticks = 0
         self._repeatability: tuple[str, str] | None = None
@@ -77,6 +81,10 @@ class RuntimeService:
     @property
     def topology(self) -> Topology:
         return self._simulation.topology
+
+    @property
+    def equipment_id(self) -> str:
+        return self._simulation.parameters.production.equipment_id
 
     @property
     def platform_connected(self) -> bool:
@@ -287,6 +295,18 @@ class RuntimeService:
         with self._state_access():
             return self._simulation.optimize_ventilation()
 
+    def apply_vod(self) -> VodDecision:
+        """Command the current VOD selection in the simulation (never in equipment).
+
+        The proposal is recomputed under the state lock, so a stale or
+        safety-blocked recommendation can never be applied.
+        """
+        with self._state_access():
+            decision = self._simulation.optimize_ventilation()
+            if decision.status.value != "SELECTED":
+                raise ValueError(f"No applicable recommendation: {decision.status.value}")
+            return self._simulation.apply_vod_decision(decision)
+
     def scenario_definitions(self) -> tuple[ScenarioDefinition, ...]:
         return tuple(
             self._scenarios.definitions[key] for key in sorted(self._scenarios.definitions)
@@ -421,6 +441,12 @@ class RuntimeService:
                 f"Ditto readback verified at tick {self.platform_last_verified_tick} "
                 f"within the {self._publish_interval:.1f} s publication cycle"
             )
+        elif self.platform_error in {"AWAITING_FIRST_PUBLICATION", "AWAITING_DITTO_READBACK"}:
+            # Directly after start or reset the first readback is still in flight.
+            checks["telemetry_freshness"] = "NOT_VERIFIED"
+            details["telemetry_freshness"] = (
+                "Awaiting the first Ditto readback after start or reset"
+            )
         else:
             checks["telemetry_freshness"] = "FAIL"
             details["telemetry_freshness"] = f"Platform state: {self.platform_error}"
@@ -439,7 +465,8 @@ class RuntimeService:
         if readback is not None and readback.publication_status == "ECLIPSE_DITTO_READBACK":
             checks["source_traceability"] = "PASS"
             details["source_traceability"] = (
-                "UI state rebuilt from nine Ditto twins sharing one MQTT publication run ID; "
+                f"UI state rebuilt from {self._managed_twin_count} Ditto twins sharing one "
+                "MQTT publication run ID; "
                 "parameters declare fictional provenance"
             )
         else:

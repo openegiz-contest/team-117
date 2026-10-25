@@ -32,13 +32,18 @@ entry point.
 
 ## Runtime behaviour
 
-- The physics clock ticks every 0.5 s. The publisher sends all nine twins every
+- The physics clock ticks every 0.5 s. The publisher sends all 16 twins every
   2 ticks (`MINEGUARD_PUBLISH_EVERY_TICKS`, default 2 = 1 s) and verifies them by
   Ditto readback. If Ditto is slow, the newest pending snapshot replaces an
   older one, so I/O never stalls the physics.
-- Observed load at 1 Hz on the development host: Ditto `things` ≈ 28 % of one
-  CPU, `connectivity` ≈ 22 %; every container stayed inside its memory limit,
-  and the official `make smoke` passed while publishing.
+- Observed load at 1 Hz on a fresh stack (clean-clone rehearsal): Ditto
+  `connectivity` ≈ 55 % of one CPU, `things` ≈ 31 %, `gateway` ≈ 14 %,
+  `things-search` ≈ 13 %; every container stayed inside its memory limit, and the
+  official `make smoke` passed while publishing. On a long-lived development stack
+  (hundreds of thousands of journal events) the same publication costs more.
+- Telegraf tags every point with the message's `correlationId`, so InfluxDB
+  history has high series cardinality by platform design; the MineGuard Grafana
+  dashboard therefore defaults to a 5-minute window without auto-refresh.
 - Scenario reset restores the versioned baseline at tick 0 and republishes it
   immediately.
 
